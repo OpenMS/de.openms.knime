@@ -2,7 +2,7 @@
  * $Revision$ $Date$ $Author$
  *
  */
-package de.openms.knime.consensusXMLReader;
+package de.openms.knime;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
@@ -16,14 +16,14 @@ import org.osgi.framework.BundleContext;
  *
  * @author The OpenMS Team
  */
-public class ConsensusXMLReaderNodePlugin extends Plugin {
+public class PluginActivator extends Plugin {
     // The shared instance.
-    private static ConsensusXMLReaderNodePlugin plugin;
+    private static PluginActivator plugin;
 
     /**
      * The constructor.
      */
-    public ConsensusXMLReaderNodePlugin() {
+    public PluginActivator() {
         super();
         plugin = this;
     }
@@ -57,7 +57,7 @@ public class ConsensusXMLReaderNodePlugin extends Plugin {
      * 
      * @return Singleton instance of the Plugin
      */
-    public static ConsensusXMLReaderNodePlugin getDefault() {
+    public static PluginActivator getDefault() {
         return plugin;
     }
 
