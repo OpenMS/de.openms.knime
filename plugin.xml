@@ -2,22 +2,15 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-   <!-- This is an example for providing an own category 
-      <extension
-         point="org.knime.workbench.repository.categories">
-      <category
-            description="Category containing my nodes"
-            icon="icons/default.png"
-            level-id="myNodes"
-            name="My nodes"
-            path="/"/>
-   </extension>
-   -->
+	<extension point="org.knime.workbench.repository.categories">
+		<category description="/community/openms" icon="icons/category.png" path="/community" name="openms" level-id="openms"/>
+    	<category description="/community/openms/Conversion" icon="icons/category.png" path="/community/openms" name="Conversion" level-id="conversion"/>
+	</extension>
    
    <extension
          point="org.knime.workbench.repository.nodes">
       <node
-            category-path="/"
+            category-path="/community/openms/Conversion"
             factory-class="de.openms.knime.consensusXMLReader.ConsensusXMLReaderNodeFactory"
             id="de.openms.knime.ConsensusXMLReaderNodeFactory"/>
    </extension>
