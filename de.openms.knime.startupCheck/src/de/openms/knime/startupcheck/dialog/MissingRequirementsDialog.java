@@ -65,7 +65,8 @@ public class MissingRequirementsDialog extends Dialog {
 
 	static {
 		try {
-			OPENMS_REQUIREMENTS_URI = new URI("http://www.openms.de/");
+			OPENMS_REQUIREMENTS_URI = new URI(
+					"http://sourceforge.net/projects/open-ms/files/OpenMS/OpenMS-1.10/OpenMS-1.10-win32-prerequisites-installer.exe/download");
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
