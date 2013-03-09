@@ -16,10 +16,9 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
-import org.knime.core.data.url.MIMEType;
-import org.knime.core.data.url.URIContent;
-import org.knime.core.data.url.port.MIMEURIPortObject;
-import org.knime.core.data.url.port.MIMEURIPortObjectSpec;
+import org.knime.core.data.uri.URIContent;
+import org.knime.core.data.uri.URIPortObject;
+import org.knime.core.data.uri.URIPortObjectSpec;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -54,7 +53,7 @@ public class ConsensusXMLReaderNodeModel extends NodeModel {
 	 * Constructor for the node model.
 	 */
 	protected ConsensusXMLReaderNodeModel() {
-		super(new PortType[] { new PortType(MIMEURIPortObject.class) },
+		super(new PortType[] { new PortType(URIPortObject.class) },
 				new PortType[] { new PortType(BufferedDataTable.class) });
 	}
 
@@ -66,7 +65,7 @@ public class ConsensusXMLReaderNodeModel extends NodeModel {
 			final ExecutionContext exec) throws Exception {
 		logger.info("Node Model Stub... this is not yet implemented !");
 
-		MIMEURIPortObject obj = (MIMEURIPortObject) inObjects[0];
+		URIPortObject obj = (URIPortObject) inObjects[0];
 		List<URIContent> uris = obj.getURIContents();
 		if (uris.size() == 0) {
 			throw new Exception(
@@ -178,16 +177,17 @@ public class ConsensusXMLReaderNodeModel extends NodeModel {
 		// we do not know how the table looks before we read the complete
 		// consensusXML file
 
-		if (!(inSpecs[0] instanceof MIMEURIPortObjectSpec)) {
+		if (!(inSpecs[0] instanceof URIPortObjectSpec)) {
 			throw new InvalidSettingsException(
 					"no MIMEURIPortObject compatible port object at port 0");
 		}
 
-		MIMEURIPortObjectSpec spec = (MIMEURIPortObjectSpec) inSpecs[0];
-		if (!spec.getMIMEType().equals(new MIMEType("consensusxml"))) {
+		URIPortObjectSpec spec = (URIPortObjectSpec) inSpecs[0];
+		if (!"consensusxml".equals(spec.getFileExtensions().get(0)
+				.toLowerCase())) {
 			throw new InvalidSettingsException(
 					"This node can only parse consensusXML files but got "
-							+ spec.getMIMEType() + ".");
+							+ spec.getFileExtensions().get(0) + ".");
 		}
 
 		return new DataTableSpec[] { null };
