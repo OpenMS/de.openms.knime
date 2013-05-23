@@ -30,10 +30,9 @@
  */
 package de.openms.knime.startupcheck;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
 
 import de.openms.knime.startupcheck.dialog.MissingRequirementsDialog;
 import de.openms.knime.startupcheck.registryaccess.WinRegistryQuery;
@@ -54,12 +53,8 @@ public class StartupCheck implements IStartup {
 	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
 	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
 	// debug logger
-	private final static Logger LOGGER;
-
-	static {
-		BasicConfigurator.configure();
-		LOGGER = Logger.getLogger(StartupCheck.class);
-	}
+	private static final NodeLogger LOGGER = NodeLogger
+			.getLogger(StartupCheck.class);
 
 	/*
 	 * (non-Javadoc)
