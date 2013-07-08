@@ -14,7 +14,7 @@
     </fullDescription>
     
     <ports>
-        <inPort index="0" name="mzTab input file.">Description of first input port...</inPort>
-        <outPort index="0" name="Table containing the small molecule data.">Description of first output port...</outPort>
+        <inPort index="0" name="mzTab input file.">The mzTab file containing the small molecule data.</inPort>
+        <outPort index="0" name="Table containing the small molecule data.">Datatable containing the small molecule information from the mzTab file.</outPort>
     </ports>    
 </knimeNode>
