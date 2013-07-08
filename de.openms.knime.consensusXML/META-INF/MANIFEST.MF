@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Custom extensions for KNIME to use OpenMS.
-Bundle-SymbolicName: de.openms.knime.converter;singleton:=true
+Bundle-SymbolicName: de.openms.knime.consensusXML;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-ClassPath: consensusxmlreader.jar
 Bundle-Activator: de.openms.knime.PluginActivator
