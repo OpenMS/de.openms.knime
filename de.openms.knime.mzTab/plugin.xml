@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+	<extension point="org.knime.workbench.repository.categories">
+		<category description="/community/OpenMS" icon="icons/category.png" path="/community/" name="OpenMS" level-id="OpenMS"/>
+    	<category description="/community/OpenMS/Conversion" icon="icons/category.png" path="/community/OpenMS" name="Conversion" level-id="Conversion"/>
+    	<category description="/community/OpenMS/Conversion/mzTab" icon="icons/category.png" path="/community/OpenMS/Conversion" name="mzTab" level-id="mzTab"/>
+	</extension>
+   
+   <extension
+         point="org.knime.workbench.repository.nodes">
+      <node
+            category-path="/community/OpenMS/Conversion/mzTab"
+            factory-class="de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeFactory"
+            id="de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeFactory"/>
+   </extension>
+   
+</plugin>

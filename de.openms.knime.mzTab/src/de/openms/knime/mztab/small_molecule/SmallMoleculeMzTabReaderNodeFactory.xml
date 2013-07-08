@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./file2table.png" type="Manipulator">
+    <name>SmallMoleculeMzTabReader</name>
+    
+    <shortDescription>
+        This node reads the small molecule section of the mzTab standard (as of 07/2013).
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>This node reads the small molecule section of the mzTab standard (as of 07/2013) into a table.
+        mzTab files from other sections of the standard will make the execution fail, so make sure that you only provide data from the small molecule section.
+        <i>Note: This read will ignore all optional columns in the table.</i></intro>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="mzTab input file.">Description of first input port...</inPort>
+        <outPort index="0" name="Table containing the small molecule data.">Description of first output port...</outPort>
+    </ports>    
+</knimeNode>

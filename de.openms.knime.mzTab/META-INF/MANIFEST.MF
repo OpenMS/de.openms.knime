@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SmallMoleculeMzTabReader-Node extension for KNIME Workbench
+Bundle-SymbolicName: de.openms.knime.mztab.small_molecule; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-ClassPath: smallmoleculemztabreader.jar
+Bundle-Activator: de.openms.knime.mztab.MzTabReaderNodesPlugin
+Bundle-Vendor: Stephan Aiche on behalf of the OpenMS Team
+Require-Bundle: org.eclipse.core.runtime,
+ org.knime.workbench.core,
+ org.knime.workbench.repository,
+ org.knime.base,
+ org.knime.base.filehandling;bundle-version="[2.7.2,3.0.0)",
+ org.knime.core.data.uritype;bundle-version="[2.7.0,3.0.0)"
+Bundle-ActivationPolicy: lazy
+Export-Package: de.openms.knime.mztab.small_molecule
+
