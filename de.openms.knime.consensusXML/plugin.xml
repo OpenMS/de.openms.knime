@@ -3,16 +3,16 @@
 <plugin>
 
 	<extension point="org.knime.workbench.repository.categories">
-		<category description="/community/openms" icon="icons/category.png" path="/community" name="openms" level-id="openms"/>
-    	<category description="/community/openms/Conversion" icon="icons/category.png" path="/community/openms" name="Conversion" level-id="conversion"/>
+		<category description="/community/OpenMS" icon="icons/category.png" path="/community/" name="OpenMS" level-id="OpenMS"/>
+    	<category description="/community/OpenMS/Conversion" icon="icons/category.png" path="/community/OpenMS" name="Conversion" level-id="Conversion"/>
 	</extension>
    
    <extension
          point="org.knime.workbench.repository.nodes">
       <node
-            category-path="/community/openms/Conversion"
-            factory-class="de.openms.knime.consensusXMLReader.ConsensusXMLReaderNodeFactory"
-            id="de.openms.knime.ConsensusXMLReaderNodeFactory"/>
+            category-path="/community/OpenMS/Conversion"
+            factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"
+            id="de.openms.knime.consensusTextReader.ConsensusXMLReaderNodeFactory"/>            
    </extension>
    
 </plugin>

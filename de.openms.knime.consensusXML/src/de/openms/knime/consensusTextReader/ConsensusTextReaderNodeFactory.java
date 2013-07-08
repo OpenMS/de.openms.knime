@@ -1,24 +1,24 @@
-package de.openms.knime.consensusXMLReader;
+package de.openms.knime.consensusTextReader;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "ConsensusXMLReader" Node. Converts
- * consesnsusXML files to KNIME tables.
+ * <code>NodeFactory</code> for the "ConsensusTextReader" Node.
  * 
- * @author The OpenMS Team
+ * 
+ * @author Stephan Aiche and the OpenMS Team
  */
-public class ConsensusXMLReaderNodeFactory extends
-		NodeFactory<ConsensusXMLReaderNodeModel> {
+public class ConsensusTextReaderNodeFactory extends
+		NodeFactory<ConsensusTextReaderNodeModel> {
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ConsensusXMLReaderNodeModel createNodeModel() {
-		return new ConsensusXMLReaderNodeModel();
+	public ConsensusTextReaderNodeModel createNodeModel() {
+		return new ConsensusTextReaderNodeModel();
 	}
 
 	/**
@@ -33,8 +33,8 @@ public class ConsensusXMLReaderNodeFactory extends
 	 * {@inheritDoc}
 	 */
 	@Override
-	public NodeView<ConsensusXMLReaderNodeModel> createNodeView(
-			final int viewIndex, final ConsensusXMLReaderNodeModel nodeModel) {
+	public NodeView<ConsensusTextReaderNodeModel> createNodeView(
+			final int viewIndex, final ConsensusTextReaderNodeModel nodeModel) {
 		return null;
 	}
 
