@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Require-Bundle: org.eclipse.core.runtime,
  org.knime.workbench.core,
  org.knime.workbench.repository,
- org.knime.base,org.knime.base.filehandling;bundle-version="[2.7.2,3.0.0)",
+ org.knime.base.filehandling;bundle-version="[2.7.2,3.0.0)",
  org.knime.core.data.uritype;bundle-version="[2.7.0,3.0.0)"
 Bundle-Vendor: The OpenMS Team
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 0.1.0.qualifier
-Bundle-Name: MzTabReader-Nodes extension for KNIME
-Bundle-Activator: de.openms.knime.mztab.MzTabReaderNodesPlugin
+Bundle-Name: Custom extensions for KNIME to read the output of the TextExporter.
+Bundle-Activator: de.openms.knime.PluginActivator
 Bundle-ManifestVersion: 2
-Bundle-SymbolicName: de.openms.knime.mzTab;singleton:=true
+Bundle-SymbolicName: de.openms.knime.textexporter_reader;singleton:=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 
