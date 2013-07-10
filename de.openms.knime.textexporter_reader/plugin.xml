@@ -12,7 +12,7 @@
       <node
             category-path="/community/OpenMS/Conversion"
             factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"
-            id="de.openms.knime.consensusTextReader.ConsensusXMLReaderNodeFactory"/>            
+            id="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"/>            
    </extension>
    
 </plugin>
