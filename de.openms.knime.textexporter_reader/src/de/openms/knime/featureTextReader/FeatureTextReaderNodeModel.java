@@ -1,34 +1,4 @@
-/**
- * --------------------------------------------------------------------------
- *                   OpenMS -- Open-Source Mass Spectrometry
- * --------------------------------------------------------------------------
- * Copyright The OpenMS Team -- Eberhard Karls University Tuebingen,
- * ETH Zurich, and Freie Universitaet Berlin 2002-2013.
- * 
- * This software is released under a three-clause BSD license:
- *  * Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *  * Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *  * Neither the name of any author or any participating institution
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- * For a full list of authors, refer to the file AUTHORS.
- * --------------------------------------------------------------------------
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL ANY OF THE AUTHORS OR THE CONTRIBUTING
- * INSTITUTIONS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-package de.openms.knime.consensusTextReader;
+package de.openms.knime.featureTextReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,21 +24,21 @@ import org.knime.core.node.port.PortType;
 import de.openms.knime.TextExporterParser;
 
 /**
- * This is the model implementation of ConsensusTextReader.
+ * This is the model implementation of FeatureTextReader. Reads files exported
+ * b...
  * 
- * 
- * @author Stephan Aiche and the OpenMS Team
+ * @author The OpenMS Team
  */
-public class ConsensusTextReaderNodeModel extends NodeModel {
+public class FeatureTextReaderNodeModel extends NodeModel {
 
 	// the logger instance
 	private static final NodeLogger logger = NodeLogger
-			.getLogger(ConsensusTextReaderNodeModel.class);
+			.getLogger(FeatureTextReaderNodeModel.class);
 
 	/**
 	 * Constructor for the node model.
 	 */
-	protected ConsensusTextReaderNodeModel() {
+	protected FeatureTextReaderNodeModel() {
 		super(new PortType[] { new PortType(URIPortObject.class) },
 				new PortType[] { new PortType(BufferedDataTable.class) });
 	}
@@ -94,7 +64,7 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 		URI relURI = uris.get(0).getURI();
 		File cXMLFile = new File(relURI);
 
-		TextExporterParser parser = new TextExporterParser("CONSENSUS");
+		TextExporterParser parser = new TextExporterParser("FEATURE");
 		BufferedDataTable out = parser.parseFile(cXMLFile, exec);
 
 		return new BufferedDataTable[] { out };
@@ -156,4 +126,5 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 			final ExecutionMonitor exec) throws IOException,
 			CanceledExecutionException {
 	}
+
 }

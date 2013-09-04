@@ -1,18 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?eclipse version="3.0"?>
+
 <plugin>
 
 	<extension point="org.knime.workbench.repository.categories">
-		<category description="/community/OpenMS" icon="icons/category.png" path="/community/" name="OpenMS" level-id="OpenMS"/>
-    	<category description="/community/OpenMS/Conversion" icon="icons/category.png" path="/community/OpenMS" name="Conversion" level-id="Conversion"/>
+		<category description="/community/OpenMS" icon="icons/category.png" level-id="OpenMS" name="OpenMS" path="/community/"/>
+    	<category description="/community/OpenMS/Conversion" icon="icons/category.png" level-id="Conversion" name="Conversion" path="/community/OpenMS"/>
 	</extension>
    
-   <extension
-         point="org.knime.workbench.repository.nodes">
-      <node
-            category-path="/community/OpenMS/Conversion"
-            factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"
-            id="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"/>            
+   <extension point="org.knime.workbench.repository.nodes">
+      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory" id="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"/>            
+      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.featureTextReader.FeatureTextReaderNodeFactory" id="de.openms.knime.featureTextReader.FeatureTextReaderNodeFactory"/>
    </extension>
    
 </plugin>
