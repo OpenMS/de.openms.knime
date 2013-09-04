@@ -47,6 +47,7 @@ import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
+import org.knime.core.data.def.StringCell;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.data.uri.URIPortObject;
 import org.knime.core.node.BufferedDataContainer;
@@ -76,11 +77,17 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 			.getLogger(ConsensusTextReaderNodeModel.class);
 
 	/**
+	 * The separator used in the file
+	 */
+	private String m_separator;
+
+	/**
 	 * Constructor for the node model.
 	 */
 	protected ConsensusTextReaderNodeModel() {
 		super(new PortType[] { new PortType(URIPortObject.class) },
 				new PortType[] { new PortType(BufferedDataTable.class) });
+		m_separator = " ";
 	}
 
 	/**
@@ -125,33 +132,35 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 			}
 
 			int rowIdx = 1;
+			String lastConsensusLine = null;
 
 			// now parse the content
 			while ((line = brReader.readLine()) != null) {
 				if (line.startsWith("CONSENSUS")) {
-					// create a new Row
-					DataCell[] cells = new DataCell[spec.getNumColumns()];
-
-					// get the values
-					String[] values = line.split(" ");
-					// check that the consensus line fits
-					assert values.length - 1 == spec.getNumColumns();
-					for (int i = 1; i < values.length; ++i) {
-						String pValue = (!("nan".equals(values[i])) ? values[i]
-								: "0");
-
-						if (spec.getColumnSpec(i - 1).getType() == IntCell.TYPE) {
-							cells[i - 1] = new IntCell(Integer.parseInt(pValue));
-						} else {
-							cells[i - 1] = new DoubleCell(
-									Double.parseDouble(pValue));
-						}
+					// we still have an unparsed last consensus line
+					if (lastConsensusLine != null) {
+						container.addRowToTable(parseLine(spec, container,
+								lastConsensusLine, "", rowIdx++));
 					}
-					RowKey key = new RowKey("Row " + rowIdx++);
-					DataRow row = new DefaultRow(key, cells);
-					container.addRowToTable(row);
-					exec.checkCanceled();
+					lastConsensusLine = line;
+				} else if (line.startsWith("PEPTIDE")) {
+					if (lastConsensusLine != null) {
+						container.addRowToTable(parseLine(spec, container,
+								lastConsensusLine, line, rowIdx++));
+
+						// clear last consensus for next round
+						lastConsensusLine = null;
+					} else {
+						logger.info("Found two identifications for last consensus element. Will ignore second.");
+					}
 				}
+				exec.checkCanceled();
+			}
+
+			// ensure that there is no unfinished consensus line
+			if (lastConsensusLine != null) {
+				container.addRowToTable(parseLine(spec, container,
+						lastConsensusLine, "", rowIdx++));
 			}
 
 			container.close();
@@ -167,9 +176,75 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 		return new BufferedDataTable[] { out };
 	}
 
+	/**
+	 * Converts the given line from the textexporter file into a row in the
+	 * DataContainer.
+	 * 
+	 * @param exec
+	 *            The execution
+	 * @param spec
+	 * @param container
+	 * @param consensusLine
+	 * @param rowIdx
+	 * @return
+	 * @throws CanceledExecutionException
+	 */
+	private DataRow parseLine(DataTableSpec spec,
+			BufferedDataContainer container, String consensusLine,
+			String peptideLine, int rowIdx) throws CanceledExecutionException {
+		// create a new Row
+		DataCell[] cells = new DataCell[spec.getNumColumns()];
+
+		// get the values
+		String[] consensusValues = consensusLine.split(m_separator);
+		String[] peptideValues = peptideLine.split(m_separator);
+
+		if ("".equals(peptideLine.trim())) {
+			peptideValues = new String[] { "PEPTIDE", "0", "0", "0", "-1",
+					"UNIDENTIFIED_PEPTIDE", "0", "", "", "", "",
+					"UNIDENTIFIED_PROTEIN" };
+		}
+
+		// check that the consensus line fits
+		assert (consensusValues.length - 1 + peptideValues.length - 1) == spec
+				.getNumColumns();
+		for (int i = 1; i < consensusValues.length; ++i) {
+			String pValue = (!("nan".equals(consensusValues[i])) ? consensusValues[i]
+					: "0");
+
+			if (spec.getColumnSpec(i - 1).getType() == IntCell.TYPE) {
+				cells[i - 1] = new IntCell(Integer.parseInt(pValue));
+			} else {
+				cells[i - 1] = new DoubleCell(Double.parseDouble(pValue));
+			}
+		}
+
+		for (int i = 1; i < peptideValues.length; ++i) {
+			// index
+			int cur_idx = consensusValues.length + i - 2;
+
+			if (spec.getColumnSpec(cur_idx).getType() == IntCell.TYPE) {
+				cells[cur_idx] = new IntCell(Integer.parseInt(peptideValues[i]));
+			} else if (spec.getColumnSpec(cur_idx).getType() == DoubleCell.TYPE) {
+				cells[cur_idx] = new DoubleCell(
+						Double.parseDouble(peptideValues[i]));
+			} else {
+				cells[cur_idx] = new StringCell(peptideValues[i]);
+			}
+		}
+
+		RowKey key = new RowKey("Row " + rowIdx);
+		return new DefaultRow(key, cells);
+	}
+
 	private DataTableSpec parseDataTableSpec(String line) {
-		String[] colHeaders = line.split(" ");
-		DataColumnSpec[] specs = new DataColumnSpec[colHeaders.length - 1];
+		guessSeparator(line);
+
+		String[] colHeaders = line.split(m_separator);
+		// we add also peptide information
+		// #PEPTIDE rt mz score rank sequence charge aa_before aa_after
+		// score_type search_identifier accessions
+		DataColumnSpec[] specs = new DataColumnSpec[colHeaders.length + 10];
 
 		for (int i = 1; i < colHeaders.length; ++i) {
 			if (colHeaders[i].startsWith("charge_")) {
@@ -181,7 +256,55 @@ public class ConsensusTextReaderNodeModel extends NodeModel {
 			}
 		}
 
+		// add peptide information
+		int current_col = colHeaders.length - 1;
+		specs[current_col++] = new DataColumnSpecCreator("peptide_rt",
+				DoubleCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("peptide_mz",
+				DoubleCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("score",
+				DoubleCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("rank", IntCell.TYPE)
+				.createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("sequence",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("charge", IntCell.TYPE)
+				.createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("aa_before",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("aa_after",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("score_type",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("search_identifier",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("accessions",
+				StringCell.TYPE).createSpec();
+
 		return new DataTableSpec(specs);
+	}
+
+	/**
+	 * Try to determine the separator in this file based on one of the header
+	 * lines.
+	 * 
+	 * @param line
+	 *            The line to guess the separator from.
+	 */
+	private void guessSeparator(final String line) {
+		if (line.startsWith("#CONSENSUS" + m_separator + "rt_cf")) {
+			// it seems to be the default one " "
+			return;
+		}
+
+		String[] potential_separators = new String[] { "\t", ";", "," };
+		for (String separator : potential_separators) {
+			if (line.startsWith("#CONSENSUS" + separator + "rt_cf")) {
+				m_separator = separator;
+				logger.debug("New separator chosen: '" + m_separator + "'");
+				break;
+			}
+		}
 	}
 
 	/**
