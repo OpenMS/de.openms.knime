@@ -30,59 +30,29 @@
  */
 package de.openms.knime.mztab.small_molecule;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
+import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 
 /**
- * <code>NodeFactory</code> for the "SmallMoleculeMzTabReader" Node. This node
+ * This is the dialog implementation of SmallMoleculeMzTabReader. This node
  * reads the small molecule section of the mzTab standard (as of 07/2013).
  * 
  * @author Stephan Aiche on behalf of the OpenMS Team
  */
-public class SmallMoleculeMzTabReaderNodeFactory extends
-        NodeFactory<SmallMoleculeMzTabReaderNodeModel> {
+public class SmallMoleculeMzTabReaderNodeDialog extends DefaultNodeSettingsPane {
 
     /**
-     * {@inheritDoc}
+     * Default c'tor.
      */
-    @Override
-    public SmallMoleculeMzTabReaderNodeModel createNodeModel() {
-        return new SmallMoleculeMzTabReaderNodeModel();
-    }
+    public SmallMoleculeMzTabReaderNodeDialog() {
+        super();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getNrNodeViews() {
-        return 0;
+        // add handle optional columns switch
+        addDialogComponent(new DialogComponentBoolean(
+                new SettingsModelBoolean(
+                        SmallMoleculeMzTabReaderNodeModel.CFG_INCLUDE_OPTIONAL_COLUMNS,
+                        SmallMoleculeMzTabReaderNodeModel.DEFAULT_INCLUDE_OPTIONAL_COLUMNS),
+                "Include optional columns from mzTab file."));
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeView<SmallMoleculeMzTabReaderNodeModel> createNodeView(
-            final int viewIndex,
-            final SmallMoleculeMzTabReaderNodeModel nodeModel) {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasDialog() {
-        return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeDialogPane createNodeDialogPane() {
-        return new SmallMoleculeMzTabReaderNodeDialog();
-    }
-
 }

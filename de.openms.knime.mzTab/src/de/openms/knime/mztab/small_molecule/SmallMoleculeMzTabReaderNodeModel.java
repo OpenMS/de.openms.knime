@@ -60,6 +60,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
@@ -76,9 +77,17 @@ import de.openms.knime.mztab.small_molecule.exceptions.MissingSmallMoleculeConte
  */
 public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
 
+    static String CFG_INCLUDE_OPTIONAL_COLUMNS = "include_optional_columns";
+    static boolean DEFAULT_INCLUDE_OPTIONAL_COLUMNS = false;
+
+    private final SettingsModelBoolean m_include_optional = new SettingsModelBoolean(
+            CFG_INCLUDE_OPTIONAL_COLUMNS, DEFAULT_INCLUDE_OPTIONAL_COLUMNS);
+
     // the logger instance
     private static final NodeLogger logger = NodeLogger
             .getLogger(SmallMoleculeMzTabReaderNodeModel.class);
+
+    private static final int NUM_REGULAR_MZTAB_COLUMNS = 22;
 
     /**
      * Constructor for the node model.
@@ -112,8 +121,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
         File cXMLFile = new File(relURI);
 
         BufferedReader brReader = null;
-        BufferedDataContainer container = exec
-                .createDataContainer(createMzTabSmallMoleculeSpec());
+        BufferedDataContainer container = null;
         BufferedDataTable out = null;
         try {
             // read the data and fill the table
@@ -131,7 +139,8 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
             while ((line = brReader.readLine()) != null) {
                 if (line.trim().startsWith("SMH")) {
                     // check if the header is valid
-                    validateSMHLine(container, line);
+                    DataTableSpec smSpec = parseSMHeaderLine(line);
+                    container = exec.createDataContainer(smSpec);
                     // we have a valid header
                     break;
                 }
@@ -171,7 +180,9 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
     public DataCell[] parseSMLLine(BufferedDataContainer container, String line)
             throws InvalidMzTabFormatException {
         String[] line_entries = line.split("\t");
-        if (line_entries.length <= container.getTableSpec().getNumColumns()) {
+        // we do not use the SML prefix
+        final int num_entries = line_entries.length - 1;
+        if (num_entries < container.getTableSpec().getNumColumns()) {
             throw new InvalidMzTabFormatException(
                     "Invalid SML line in mzTab file.");
         }
@@ -202,28 +213,62 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
         return cells;
     }
 
-    public void validateSMHLine(BufferedDataContainer container, String line)
+    public DataTableSpec parseSMHeaderLine(String line)
             throws InvalidMzTabFormatException {
         // validate SMH header against our mzTab version
         String[] header_entries = line.split("\t");
-        if (header_entries.length <= container.getTableSpec().getNumColumns()) {
+        // the first entry is SMH as indicator, we don't what that one in our
+        // header
+        final int num_header_entries = header_entries.length - 1;
+
+        if (num_header_entries < NUM_REGULAR_MZTAB_COLUMNS) {
             throw new InvalidMzTabFormatException(
                     "Invalid mzTab small molecule header (SMH). The header has not enough entries.");
         }
+
+        // we want all but the SMH entry at the beginning
+        DataColumnSpec[] specs;
+
+        if (m_include_optional.getBooleanValue()) {
+            // we wan't all headers
+            specs = new DataColumnSpec[num_header_entries];
+        } else {
+            // we only want the regular ones
+            specs = new DataColumnSpec[NUM_REGULAR_MZTAB_COLUMNS];
+        }
+
+        // add the expected column specs
+        addRegularSMColumns(specs);
+
         // compare actual header against expected header entries
-        for (int i = 0; i < container.getTableSpec().getNumColumns(); ++i) {
-            if (!header_entries[i + 1].equals(container.getTableSpec()
-                    .getColumnSpec(i).getName())) {
+        for (int i = 0; i < NUM_REGULAR_MZTAB_COLUMNS; ++i) {
+            if (!header_entries[i + 1].equals(specs[i].getName())) {
                 throw new InvalidMzTabFormatException(
                         String.format(
                                 "Invalid entry in small molecule header: Expected '%s' but got '%s'",
-                                container.getTableSpec().getColumnSpec(i)
-                                        .getName(), header_entries[i + 1]));
+                                specs[i].getName(), header_entries[i + 1]));
             }
         }
-        if (header_entries.length != container.getTableSpec().getNumColumns() + 1) {
-            setWarningMessage("mzTab file seems to contain optional columns. These will not be contained in the table.");
+
+        // now handle the unexpected columns
+        if (num_header_entries != NUM_REGULAR_MZTAB_COLUMNS
+                && !m_include_optional.getBooleanValue()) {
+            setWarningMessage("mzTab file contains optional columns. These will not be contained in the table. "
+                    + "Use the \"include optional columns\" Option if you want those columns to show up in the result table.");
+        } else {
+            // create the remaining columns
+            for (int i = NUM_REGULAR_MZTAB_COLUMNS; i < num_header_entries; ++i) {
+                // make sure we can access the column
+                assert i + 1 < header_entries.length;
+                // create string column for the optional col
+                specs[i] = new DataColumnSpecCreator(header_entries[i + 1],
+                        StringCell.TYPE).createSpec();
+            }
+
         }
+
+        // return the final spec
+        return new DataTableSpec(specs);
     }
 
     /**
@@ -239,10 +284,14 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs)
             throws InvalidSettingsException {
-        return new DataTableSpec[] { createMzTabSmallMoleculeSpec(), null };
+        if (!m_include_optional.getBooleanValue()) {
+            return new DataTableSpec[] { createDefaultMzTabSmallMoleculeSpec() };
+        } else {
+            return new DataTableSpec[] { null };
+        }
     }
 
-    private DataTableSpec createMzTabSmallMoleculeSpec() {
+    private DataTableSpec createDefaultMzTabSmallMoleculeSpec() {
         // MTD mzTab-version 1.0.0
         // SMH identifier unit_id chemical_formula smiles inchi_key description
         // mass_to_charge charge retention_time taxid species database
@@ -251,7 +300,16 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
         // smallmolecule_abundance_stdev_sub[1]
         // smallmolecule_abundance_std_error_sub[1]
 
-        DataColumnSpec[] specs = new DataColumnSpec[22];
+        DataColumnSpec[] specs = new DataColumnSpec[NUM_REGULAR_MZTAB_COLUMNS];
+        addRegularSMColumns(specs);
+
+        return new DataTableSpec(specs);
+    }
+
+    private void addRegularSMColumns(DataColumnSpec[] specs) {
+        // we add at least 22 columns
+        assert specs.length >= NUM_REGULAR_MZTAB_COLUMNS;
+
         specs[0] = new DataColumnSpecCreator("identifier", StringCell.TYPE)
                 .createSpec();
         specs[1] = new DataColumnSpecCreator("unit_id", StringCell.TYPE)
@@ -298,8 +356,6 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
         specs[21] = new DataColumnSpecCreator(
                 "smallmolecule_abundance_std_error_sub[1]", DoubleCell.TYPE)
                 .createSpec();
-
-        return new DataTableSpec(specs);
     }
 
     /**
@@ -307,6 +363,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
+        m_include_optional.saveSettingsTo(settings);
     }
 
     /**
@@ -315,6 +372,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
             throws InvalidSettingsException {
+        m_include_optional.loadSettingsFrom(settings);
     }
 
     /**
@@ -323,6 +381,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
     @Override
     protected void validateSettings(final NodeSettingsRO settings)
             throws InvalidSettingsException {
+        m_include_optional.validateSettings(settings);
     }
 
     /**

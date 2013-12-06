@@ -11,6 +11,9 @@
         <intro>This node reads the small molecule section of the mzTab standard (as of 07/2013) into a table.
         mzTab files from other sections of the standard will make the execution fail, so make sure that you only provide data from the small molecule section.
         <i>Note: This read will ignore all optional columns in the table.</i></intro>
+        
+        <option name="include optional columns">Defines if the parser simply ignores any optional column found in the mzTab file or if he includes it in the final table. 
+        Note that if set to true, the final table specification can only be generated when the node is executed.</option>
     </fullDescription>
     
     <ports>
