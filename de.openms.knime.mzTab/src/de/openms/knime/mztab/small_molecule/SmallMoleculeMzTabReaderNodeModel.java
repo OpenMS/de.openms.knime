@@ -48,8 +48,8 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
-import org.knime.core.data.uri.URIPortObject;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -93,7 +93,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected SmallMoleculeMzTabReaderNodeModel() {
-        super(new PortType[] { new PortType(URIPortObject.class) },
+        super(new PortType[] { new PortType(IURIPortObject.class) },
                 new PortType[] { new PortType(BufferedDataTable.class) });
     }
 
@@ -106,7 +106,7 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
             MissingSmallMoleculeContentException, InvalidInputException,
             IOException {
 
-        URIPortObject obj = (URIPortObject) inObjects[0];
+        IURIPortObject obj = (IURIPortObject) inObjects[0];
         List<URIContent> uris = obj.getURIContents();
         if (uris.size() == 0) {
             throw new InvalidInputException(
