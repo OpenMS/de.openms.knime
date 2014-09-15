@@ -3,7 +3,7 @@
  *                   OpenMS -- Open-Source Mass Spectrometry
  * --------------------------------------------------------------------------
  * Copyright The OpenMS Team -- Eberhard Karls University Tuebingen,
- * ETH Zurich, and Freie Universitaet Berlin 2002-2013.
+ * ETH Zurich, and Freie Universitaet Berlin 2002-2014.
  * 
  * This software is released under a three-clause BSD license:
  *  * Redistributions of source code must retain the above copyright
@@ -30,45 +30,38 @@
  */
 package de.openms.knime.startupcheck;
 
-import org.eclipse.ui.IStartup;
-import org.eclipse.ui.PlatformUI;
-import org.knime.core.node.NodeLogger;
+import java.util.ArrayList;
+import java.util.List;
 
-import de.openms.knime.startupcheck.dialog.MissingRequirementsDialog;
+import org.knime.core.node.NodeLogger;
+import org.knime.workbench.ui.startup.StartupMessage;
+import org.knime.workbench.ui.startup.StartupMessageProvider;
+
 import de.openms.knime.startupcheck.registryaccess.WinRegistryQuery;
 
 /**
- * The earlyStartup() will be executed on startup of Eclipse to check if all
- * prerequistes are installed on windows.
- * 
  * @author aiche
+ * 
  */
-public class StartupCheck implements IStartup {
+public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 
-	public static final String PREFERENCE_SHOW_AGAIN = "show_warning_again";
+	private static final NodeLogger LOGGER = NodeLogger
+			.getLogger(OpenMSStartupMessageProvider.class);
+	
+	private static final String OPENMS_REQUIREMENTS_URI = "http://sourceforge.net/projects/open-ms/files/OpenMS/OpenMS-1.10/OpenMS-1.10-win32-prerequisites-installer.exe/download";
+
 	private static final String REG_DWORD_1 = "0x1";
 	private static final String VCREDIST_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x64";
 	private static final String VCREDIST_X86_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
 	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
 	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
 	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
-	// debug logger
-	private static final NodeLogger LOGGER = NodeLogger
-			.getLogger(StartupCheck.class);
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.ui.IStartup#earlyStartup()
-	 */
 	@Override
-	public void earlyStartup() {
-		// make sure we have the correct default for our properties
-		Activator.getInstance().getPreferenceStore()
-				.setDefault(PREFERENCE_SHOW_AGAIN, true);
-
+	public List<StartupMessage> getMessages() {
 		try {
 			if (isWindows()) {
+
 				boolean dotNet4ValueClientExists = WinRegistryQuery.checkDWord(
 						NET4_CLIENT_KEY, "Install", REG_DWORD_1);
 				LOGGER.debug(".NET4 Client Value exists: "
@@ -91,7 +84,7 @@ public class StartupCheck implements IStartup {
 
 				if (!(vcRedist2010_x86ValueExists && dotNet35ValueExists
 						&& dotNet4ValueClientExists && dotNet4ValueFullExists)) {
-					showWarningDialog();
+					return getWarning();
 				}
 
 				if (is64BitSystem()) {
@@ -102,30 +95,28 @@ public class StartupCheck implements IStartup {
 							+ vcRedist2010_x64ValueExists);
 
 					if (!vcRedist2010_x64ValueExists) {
-						showWarningDialog();
+						return getWarning();
 					}
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			LOGGER.warn("Error when querying windows registry.", e);
 		}
+		return new ArrayList<StartupMessage>();
 	}
 
-	private void showWarningDialog() {
-		if (Activator.getInstance().getPreferenceStore()
-				.getBoolean(PREFERENCE_SHOW_AGAIN)) {
+	private List<StartupMessage> getWarning() {
+		final String longMessage = String
+				.format("Some of the requirements for the OpenMS KNIME Nodes are missing on your system. " +
+						"Please download the requirements installer from <a href=\"%s\">here</a>.",
+						OPENMS_REQUIREMENTS_URI);
+		final String shortMessage = "Some of the OpenMS KNIME Nodes requirements are missing. Double click for details.";
 
-			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					MissingRequirementsDialog mrDialog = new MissingRequirementsDialog(
-							PlatformUI.getWorkbench().getDisplay()
-									.getActiveShell());
-					mrDialog.create();
-					mrDialog.open();
-				}
-			});
-		}
+		StartupMessage message = new StartupMessage(longMessage, shortMessage,
+				StartupMessage.WARNING, Activator.getInstance().getBundle());
+		List<StartupMessage> messages = new ArrayList<StartupMessage>();
+		messages.add(message);
+		return messages;
 	}
 
 	private boolean is64BitSystem() {
