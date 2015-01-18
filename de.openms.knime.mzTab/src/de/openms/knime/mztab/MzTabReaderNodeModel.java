@@ -37,12 +37,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DataType;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
@@ -244,17 +247,23 @@ public class MzTabReaderNodeModel extends NodeModel {
             BufferedDataContainer container) {
         DataCell[] cells = new DataCell[container.getTableSpec()
                 .getNumColumns()];
-
         // convert the entries into a table column
         for (int i = 0; i < container.getTableSpec().getNumColumns(); ++i) {
             if (container.getTableSpec().getColumnSpec(i).getType() == IntCell.TYPE) {
-                cells[i] = new IntCell(Integer.parseInt(line_entries[i + 1]));
+                if (line_entries[i + 1] == null
+                        || "null".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
+                } else {
+                    cells[i] = new IntCell(
+                            Integer.parseInt(line_entries[i + 1]));
+                }
             } else if (container.getTableSpec().getColumnSpec(i).getType() == DoubleCell.TYPE) {
                 // we need to make sure that it is a proper value
-                if (line_entries[i + 1].equals("INF")
-                        || line_entries[i + 1].equals("NaN")
-                        || line_entries[i + 1].equals("null")) {
-                    cells[i] = new DoubleCell(-1.0);
+                if (line_entries[i + 1] == null
+                        || "INF".equals(line_entries[i + 1])
+                        || "NaN".equals(line_entries[i + 1])
+                        || "null".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                     cells[i] = new DoubleCell(
                             Double.parseDouble(line_entries[i + 1]));
@@ -268,16 +277,64 @@ public class MzTabReaderNodeModel extends NodeModel {
         return cells;
     }
 
-    public DataTableSpec parseSMHeaderLine(final String line) {
+    private DataTableSpec parseSMHeaderLine(final String line) {
         String[] line_entries = line.split("\t");
         DataColumnSpec[] colSpecs = new DataColumnSpec[line_entries.length - 1];
 
         for (int i = 1; i < line_entries.length; ++i) {
-            colSpecs[i - 1] = new DataColumnSpecCreator(line_entries[i],
-                    StringCell.TYPE).createSpec();
+            DataType type = getDataType(line_entries[i]);
+            colSpecs[i - 1] = new DataColumnSpecCreator(line_entries[i], type)
+                    .createSpec();
         }
 
         return new DataTableSpec(colSpecs);
+    }
+
+    private DataType getDataType(final String fieldName) {
+        if (isSMDouble(fieldName)) {
+            return DoubleCell.TYPE;
+        } else if (isSMInt(fieldName)) {
+            return IntCell.TYPE;
+        } else {
+            return StringCell.TYPE;
+        }
+    }
+
+    // smallmolecule_abundance_assay[1-n]
+    Pattern regSmallMolAbundanceAssay = Pattern
+            .compile("^smallmolecule_abundance_assay\\[\\d*\\]$");
+    // smallmolecule_abundance_study_variable[1-n]
+    Pattern regSmallMolAbundanceStudyVar = Pattern
+            .compile("^smallmolecule_abundance_study_variable\\[\\d*\\]$");
+    // smallmolecule_abundance_stdev_study_variable[1-n]
+    Pattern regSmallMolAbundanceStdDev = Pattern
+            .compile("^smallmolecule_abundance_stdev_study_variable\\[\\d*\\]$");
+    // smallmolecule_abundance_std_error_study_variable[1-n]
+    Pattern regSmallMolAbundanceStdErr = Pattern
+            .compile("^smallmolecule_abundance_std_error_study_variable\\[\\d*\\]$");
+
+    private boolean isSMDouble(final String fieldName) {
+        // retention time ? Double List
+        // best_search_engine_score[1-n] ? ParameterList
+        // search_engine_score[1-n]_ms_run[1-n] ? ParameterList
+
+        // exp_mass_to_charge
+        // calc_mass_to_charge
+        // + regex matching
+        return "exp_mass_to_charge".equals(fieldName)
+                || "calc_mass_to_charge".equals(fieldName)
+                || regSmallMolAbundanceAssay.matcher(fieldName).matches()
+                || regSmallMolAbundanceStudyVar.matcher(fieldName).matches()
+                || regSmallMolAbundanceStdDev.matcher(fieldName).matches()
+                || regSmallMolAbundanceStdErr.matcher(fieldName).matches();
+    }
+
+    private boolean isSMInt(final String fieldName) {
+        // charge
+        // taxid
+        // reliability
+        return "charge".equals(fieldName) || "taxid".equals(fieldName)
+                || "reliability".equals(fieldName);
     }
 
     /**
