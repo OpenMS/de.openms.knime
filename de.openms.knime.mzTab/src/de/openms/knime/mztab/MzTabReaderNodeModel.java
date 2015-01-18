@@ -312,11 +312,15 @@ public class MzTabReaderNodeModel extends NodeModel {
     // smallmolecule_abundance_std_error_study_variable[1-n]
     Pattern regSmallMolAbundanceStdErr = Pattern
             .compile("^smallmolecule_abundance_std_error_study_variable\\[\\d*\\]$");
+    // best_search_engine_score[1-n] ? ParameterList
+    Pattern regSmallMolBestSearchEngineScore = Pattern
+            .compile("^best_search_engine_score\\[\\d*\\]$");
+    // search_engine_score[1-n]_ms_run[1-n] ? ParameterList
+    Pattern regSmallMolSearchEngineScoreMsRun = Pattern
+            .compile("^search_engine_score\\[\\d*\\]_ms_run\\[\\d*\\]$");
 
     private boolean isSMDouble(final String fieldName) {
         // retention time ? Double List
-        // best_search_engine_score[1-n] ? ParameterList
-        // search_engine_score[1-n]_ms_run[1-n] ? ParameterList
 
         // exp_mass_to_charge
         // calc_mass_to_charge
@@ -326,7 +330,11 @@ public class MzTabReaderNodeModel extends NodeModel {
                 || regSmallMolAbundanceAssay.matcher(fieldName).matches()
                 || regSmallMolAbundanceStudyVar.matcher(fieldName).matches()
                 || regSmallMolAbundanceStdDev.matcher(fieldName).matches()
-                || regSmallMolAbundanceStdErr.matcher(fieldName).matches();
+                || regSmallMolAbundanceStdErr.matcher(fieldName).matches()
+                || regSmallMolBestSearchEngineScore.matcher(fieldName)
+                        .matches()
+                || regSmallMolSearchEngineScoreMsRun.matcher(fieldName)
+                        .matches();
     }
 
     private boolean isSMInt(final String fieldName) {
