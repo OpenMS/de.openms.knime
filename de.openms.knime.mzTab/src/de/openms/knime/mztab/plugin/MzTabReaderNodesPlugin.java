@@ -28,7 +28,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.openms.knime.mztab;
+package de.openms.knime.mztab.plugin;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
