@@ -14,6 +14,19 @@
             category-path="/community/OpenMS/Conversion/mzTab"
             factory-class="de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeFactory"
             id="de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeFactory"/>
+      <node
+            category-path="/community/OpenMS/Conversion/mzTab"
+            factory-class="de.openms.knime.mztab.MzTabReaderNodeFactory"
+            id="de.openms.knime.mztab.MzTabReaderNodeFactory"/>
+   </extension>
+   <extension
+         point="org.knime.base.filehandling.mimetypes">
+      <mimetype
+            name="application/x-mztab">
+         <fileextension
+               name="mztab">
+         </fileextension>
+      </mimetype>
    </extension>
    
 </plugin>
