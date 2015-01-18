@@ -66,7 +66,7 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 
 import de.openms.knime.InvalidInputException;
-import de.openms.knime.mztab.small_molecule.exceptions.InvalidMzTabFormatException;
+import de.openms.knime.mztab.exceptions.InvalidMzTabFormatException;
 import de.openms.knime.mztab.small_molecule.exceptions.MissingSmallMoleculeContentException;
 
 /**

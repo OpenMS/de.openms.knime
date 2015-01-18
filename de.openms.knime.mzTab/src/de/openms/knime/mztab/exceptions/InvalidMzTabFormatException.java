@@ -28,7 +28,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package de.openms.knime.mztab.small_molecule.exceptions;
+package de.openms.knime.mztab.exceptions;
 
 /**
  * Exception indicating an invalid MzTab file.
