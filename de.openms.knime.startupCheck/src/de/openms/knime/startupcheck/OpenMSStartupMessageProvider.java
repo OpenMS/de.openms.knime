@@ -53,6 +53,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private static final String REG_DWORD_1 = "0x1";
 	private static final String VCREDIST_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x64";
 	private static final String VCREDIST_X86_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
+	private static final String VCREDIST_X86_ALT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
 	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
 	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
 	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
@@ -77,8 +78,11 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 				LOGGER.debug(".NET3.5 1031 Value exists: "
 						+ dotNet35ValueExists);
 
-				boolean vcRedist2010_x86ValueExists = WinRegistryQuery
-						.checkDWord(VCREDIST_X86_KEY, "Installed", REG_DWORD_1);
+				boolean vcRedist2010_x86ValueExists = 
+						WinRegistryQuery
+						.checkDWord(VCREDIST_X86_KEY, "Installed", REG_DWORD_1) ||
+						WinRegistryQuery
+                                                .checkDWord(VCREDIST_X86_ALT_KEY, "Installed", REG_DWORD_1);
 				LOGGER.debug("VC10 x86 Redist Value exists: "
 						+ vcRedist2010_x86ValueExists);
 
