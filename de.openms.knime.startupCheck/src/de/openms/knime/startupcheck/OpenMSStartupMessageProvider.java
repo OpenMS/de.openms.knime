@@ -82,7 +82,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 						WinRegistryQuery
 						.checkDWord(VCREDIST_X86_KEY, "Installed", REG_DWORD_1) ||
 						WinRegistryQuery
-                                                .checkDWord(VCREDIST_X86_ALT_KEY, "Installed", REG_DWORD_1);
+						.checkDWord(VCREDIST_X86_ALT_KEY, "Installed", REG_DWORD_1);
 				LOGGER.debug("VC10 x86 Redist Value exists: "
 						+ vcRedist2010_x86ValueExists);
 
