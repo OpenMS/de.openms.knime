@@ -53,7 +53,7 @@ import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.NodeLogger;
 
 /**
- * Parser for text based feature representations as exporter by OpenMS'
+ * Parser for text based feature / peptide ID representations as exported by OpenMS'
  * TextExporter.
  * 
  * @author aiche
@@ -70,7 +70,7 @@ public class TextExporterParser {
 	private String m_separator;
 
 	/**
-	 * The element to parse feature/consensus
+	 * The element to parse feature / consensus / only IDs
 	 */
 	private String m_elementOfInterest;
 
@@ -106,7 +106,7 @@ public class TextExporterParser {
 		}
 	}
 
-	public BufferedDataTable parseFile(File cXMLFile,
+	public BufferedDataTable parseFile(File inputFile,
 			final ExecutionContext exec) throws Exception, IOException {
 		BufferedReader brReader = null;
 		DataTableSpec spec = null;
@@ -115,9 +115,9 @@ public class TextExporterParser {
 		try {
 			// read the data and fill the table
 			brReader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(cXMLFile)));
+					new FileInputStream(inputFile)));
 
-			// find consensus start point
+			// find start point
 			String line;
 			while ((line = brReader.readLine()) != null) {
 				if (line.startsWith("#" + m_elementOfInterest)) {
@@ -128,38 +128,47 @@ public class TextExporterParser {
 					break;
 			}
 
-			int rowIdx = 1;
-			String lastConsensusLine = null;
-
 			// now parse the content
-			while ((line = brReader.readLine()) != null) {
-				if (line.startsWith(m_elementOfInterest)) {
-					// we still have an unparsed last consensus line
-					if (lastConsensusLine != null) {
-						container.addRowToTable(parseLine(spec, container,
-								lastConsensusLine, "", rowIdx++));
+			int rowIdx = 1;
+			if (m_elementOfInterest == "PEPTIDE") {
+				while ((line = brReader.readLine()) != null) {
+					if (line.startsWith(m_elementOfInterest)) {
+							container.addRowToTable(parseLine(spec, container,
+									"", line, rowIdx++));
 					}
-					lastConsensusLine = line;
-				} else if (line.startsWith("PEPTIDE")) {
-					if (lastConsensusLine != null) {
-						container.addRowToTable(parseLine(spec, container,
-								lastConsensusLine, line, rowIdx++));
-
-						// clear last consensus for next round
-						lastConsensusLine = null;
-					} else {
-						logger.info("Found two identifications for last consensus element. Will ignore second.");
-					}
+					exec.checkCanceled();
 				}
-				exec.checkCanceled();
 			}
+			else {
+				String lastConsensusLine = null;			
+				while ((line = brReader.readLine()) != null) {
+					if (line.startsWith(m_elementOfInterest)) {
+						// we still have an unparsed last consensus line
+						if (lastConsensusLine != null) {
+							container.addRowToTable(parseLine(spec, container,
+									lastConsensusLine, "", rowIdx++));
+						}
+						lastConsensusLine = line;
+					} else if (line.startsWith("PEPTIDE")) {
+						if (lastConsensusLine != null) {
+							container.addRowToTable(parseLine(spec, container,
+									lastConsensusLine, line, rowIdx++));
 
-			// ensure that there is no unfinished consensus line
-			if (lastConsensusLine != null) {
-				container.addRowToTable(parseLine(spec, container,
-						lastConsensusLine, "", rowIdx++));
+							// clear last consensus for next round
+							lastConsensusLine = null;
+						} else {
+							logger.info("Found two identifications for last consensus element. Will ignore second.");
+						}
+					}
+					exec.checkCanceled();
+				}
+				// ensure that there is no unfinished consensus line
+				if (lastConsensusLine != null) {
+					container.addRowToTable(parseLine(spec, container,
+							lastConsensusLine, "", rowIdx++));
+				}
 			}
-
+			
 			container.close();
 			out = container.getTable();
 		} catch (Exception ex) {
@@ -194,6 +203,24 @@ public class TextExporterParser {
 		// get the values
 		String[] consensusValues = consensusLine.split(m_separator);
 		String[] peptideValues = peptideLine.split(m_separator);
+		
+		if (m_elementOfInterest == "PEPTIDE") {
+			for (int i = 0; i < peptideValues.length - 2; ++i) {
+				String pValue = (!("nan".equals(peptideValues[i])) ? peptideValues[i]
+						: "0");
+
+				if (spec.getColumnSpec(i).getType() == IntCell.TYPE) {
+					cells[i] = new IntCell(Integer.parseInt(pValue));
+				} else if (spec.getColumnSpec(i).getType() == DoubleCell.TYPE) {
+					cells[i] = new DoubleCell(Double.parseDouble(pValue));
+				} else {
+					cells[i] = new StringCell(pValue);
+				}
+			}
+
+			RowKey key = new RowKey("Row " + rowIdx);
+			return new DefaultRow(key, cells);
+		}
 
 		if ("".equals(peptideLine.trim())) {
 			peptideValues = new String[] { "PEPTIDE", "0", "0", "0", "-1",
@@ -235,26 +262,36 @@ public class TextExporterParser {
 	}
 
 	private DataTableSpec parseDataTableSpec(String line) {
+		
 		guessSeparator(line);
 
-		String[] colHeaders = line.split(m_separator);
-		// we add also peptide information
-		// #PEPTIDE rt mz score rank sequence charge aa_before aa_after
-		// score_type search_identifier accessions
-		DataColumnSpec[] specs = new DataColumnSpec[colHeaders.length + 10];
+		DataColumnSpec[] specs = null;
+		int current_col = -1;
+		
+		if (m_elementOfInterest != "PEPTIDE") {
+			String[] colHeaders = line.split(m_separator);
+			// we add also peptide information
+			// #PEPTIDE rt mz score rank sequence charge aa_before aa_after
+			// score_type search_identifier accessions
+			specs = new DataColumnSpec[colHeaders.length + 10];
 
-		for (int i = 1; i < colHeaders.length; ++i) {
-			if (colHeaders[i].startsWith("charge_")) {
-				specs[i - 1] = new DataColumnSpecCreator(colHeaders[i],
-						IntCell.TYPE).createSpec();
-			} else {
-				specs[i - 1] = new DataColumnSpecCreator(colHeaders[i],
-						DoubleCell.TYPE).createSpec();
+			for (int i = 1; i < colHeaders.length; ++i) {
+				if (colHeaders[i].startsWith("charge_")) {
+					specs[i - 1] = new DataColumnSpecCreator(colHeaders[i],
+							IntCell.TYPE).createSpec();
+				} else {
+					specs[i - 1] = new DataColumnSpecCreator(colHeaders[i],
+							DoubleCell.TYPE).createSpec();
+				}
 			}
+			current_col = colHeaders.length - 1;		
+		}
+		else
+		{
+			specs = new DataColumnSpec[11];
 		}
 
 		// add peptide information
-		int current_col = colHeaders.length - 1;
 		specs[current_col++] = new DataColumnSpecCreator("peptide_rt",
 				DoubleCell.TYPE).createSpec();
 		specs[current_col++] = new DataColumnSpecCreator("peptide_mz",
