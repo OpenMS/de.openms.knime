@@ -130,7 +130,7 @@ public class TextExporterParser {
 
 			// now parse the content
 			int rowIdx = 1;
-			if (m_elementOfInterest == "PEPTIDE") {
+			if ("PEPTIDE".equals(m_elementOfInterest)) {
 				while ((line = brReader.readLine()) != null) {
 					if (line.startsWith(m_elementOfInterest)) {
 							container.addRowToTable(parseLine(spec, container,
@@ -204,9 +204,9 @@ public class TextExporterParser {
 		String[] consensusValues = consensusLine.split(m_separator);
 		String[] peptideValues = peptideLine.split(m_separator);
 		
-		if (m_elementOfInterest == "PEPTIDE") {
-			for (int i = 0; i < peptideValues.length - 2; ++i) {
-				String pValue = (!("nan".equals(peptideValues[i])) ? peptideValues[i]
+		if ("PEPTIDE".equals(m_elementOfInterest)) {
+			for (int i = 0; i < peptideValues.length - 3; ++i) {
+				String pValue = (!("nan".equals(peptideValues[i+1])) ? peptideValues[i+1]
 						: "0");
 
 				if (spec.getColumnSpec(i).getType() == IntCell.TYPE) {
@@ -266,9 +266,9 @@ public class TextExporterParser {
 		guessSeparator(line);
 
 		DataColumnSpec[] specs = null;
-		int current_col = -1;
+		int current_col = 0;
 		
-		if (m_elementOfInterest != "PEPTIDE") {
+		if (!"PEPTIDE".equals(m_elementOfInterest)) {
 			String[] colHeaders = line.split(m_separator);
 			// we add also peptide information
 			// #PEPTIDE rt mz score rank sequence charge aa_before aa_after
