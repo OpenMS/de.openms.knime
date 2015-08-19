@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
 <knimeNode icon="./file2table.png" type="Manipulator">
-    <name>ConsensusTextReader</name>
+    <name>IDTextReader</name>
     
     <shortDescription>
-    	This node reads all consensus elements from the TextExporter node into a KNIME table.
+    	This node reads all identified peptides from the TextExporter node (when applied to an idXML file) into a KNIME table.
     </shortDescription>
     
     <fullDescription>
         <intro>This node can be used to read the output of the TextExporter tool into a KNIME table.
-        The TextExporter, when applied to a consensusXML file, writes out information on the contained consensus elements. 
-        Namely the consensus location (mz and rt) and the location, quality, intensity, and charge of all the individual sub-elements. 
-        All these information will be parsed into a KNIME table.</intro>
+			TextExporter, when applied to an idXML file, writes out information on the identified peptides,
+			namely RT, m/z, score, rank, sequence, charge, amino acids before and after, the type of score (q-value, PEP, ...),
+			a search identifier and the protein accesions. All these information will be parsed into a KNIME table.</intro>
     </fullDescription>
     
     <ports>
-        <inPort index="0" name="Consensus File">Incoming text file created with the TextExporter node.</inPort>
-        <outPort index="0" name="Consensus Table">Table containing the information on the consensus elements.</outPort>
+        <inPort index="0" name="ID File">Incoming text file created with the TextExporter node.</inPort>
+        <outPort index="0" name="ID Table">Table containing the information on the identified peptides.</outPort>
     </ports>    
 </knimeNode>
