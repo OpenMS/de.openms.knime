@@ -85,7 +85,7 @@ public class MzTabReaderNodeModel extends NodeModel {
     private static final NodeLogger logger = NodeLogger
             .getLogger(SmallMoleculeMzTabReaderNodeModel.class);
 
-    private int metaDataRowIdx, smallMolRowIdx;
+    private int metaDataRowIdx,proteinRowIdx,peptideRowIdx,psmRowIdx, smallMolRowIdx;
 
     /**
      * Create spec for meta data section.
@@ -106,10 +106,18 @@ public class MzTabReaderNodeModel extends NodeModel {
      */
     protected MzTabReaderNodeModel() {
         super(new PortType[] { new PortType(IURIPortObject.class) },
-                new PortType[] { new PortType(BufferedDataTable.class),
-                        new PortType(BufferedDataTable.class) });
+                new PortType[] { 
+        		new PortType(BufferedDataTable.class),
+        		new PortType(BufferedDataTable.class),
+        		new PortType(BufferedDataTable.class),
+        		new PortType(BufferedDataTable.class),
+        		new PortType(BufferedDataTable.class),
+        });
 
         metaDataRowIdx = 1;
+        proteinRowIdx = 1;
+        peptideRowIdx = 1;
+        psmRowIdx = 1;
         smallMolRowIdx = 1;
     }
 
@@ -122,6 +130,9 @@ public class MzTabReaderNodeModel extends NodeModel {
 
         // reset indices ..
         metaDataRowIdx = 1;
+        proteinRowIdx = 1;
+        peptideRowIdx = 1;
+        psmRowIdx = 1;
         smallMolRowIdx = 1;
 
         // extract file name
@@ -140,12 +151,23 @@ public class MzTabReaderNodeModel extends NodeModel {
         File cXMLFile = new File(relURI);
 
         BufferedReader brReader = null;
-        // container/table small molecule data
-        BufferedDataContainer smallMolContainer = null;
-        BufferedDataTable smallMolTable = null;
+        
         // container/table for meta data
         BufferedDataContainer metaDataContainer = null;
         BufferedDataTable metaDataTable = null;
+        // container/table for meta data
+        BufferedDataContainer proteinDataContainer = null;
+        BufferedDataTable proteinDataTable = null;
+        // container/table for meta data
+        BufferedDataContainer peptideDataContainer = null;
+        BufferedDataTable peptideDataTable = null;
+        // container/table for meta data
+        BufferedDataContainer psmDataContainer = null;
+        BufferedDataTable psmDataTable = null;
+        // container/table small molecule data
+        BufferedDataContainer smallMolContainer = null;
+        BufferedDataTable smallMolTable = null;
+
 
         try {
             // read the data and fill the table
@@ -154,10 +176,10 @@ public class MzTabReaderNodeModel extends NodeModel {
 
             // validate mzTab starting point
             String line = brReader.readLine();
-            if (!line.trim().startsWith("MTD")) {
-                throw new InvalidMzTabFormatException(
-                        "Invalid start of file: mzTab file should start with the line: 'MTD\tmzTab-version\t1.0.0'");
-            }
+//            if (!line.trim().startsWith("MTD")) {
+//                throw new InvalidMzTabFormatException(
+//                        "Invalid start of file: mzTab file should start with the line: 'MTD\tmzTab-version\t1.0.0'");
+//            }
 
             // create container for meta data
             metaDataContainer = exec
@@ -179,8 +201,23 @@ public class MzTabReaderNodeModel extends NodeModel {
 
                 if ("MTD".equals(identifier)) { // handle MTD
                     parseMTDLine(metaDataContainer, line);
+                } else if ("PRH".equals(identifier)) { // handle PRH
+                    DataTableSpec proteinSpec = parseHeaderLine(line);
+                    proteinDataContainer = exec.createDataContainer(proteinSpec);
+                } else if ("PRT".equals(identifier)) { // handle PRT
+                    parsePRTLine(proteinDataContainer, line);
+                } else if ("PEH".equals(identifier)) { // handle PEH
+                    DataTableSpec pepSpec = parseHeaderLine(line);
+                    peptideDataContainer = exec.createDataContainer(pepSpec);
+                } else if ("PEP".equals(identifier)) { // handle PEP
+                    parsePEPLine(peptideDataContainer, line);
+                } else if ("PSH".equals(identifier)) { // handle PSH
+                    DataTableSpec psmSpec = parseHeaderLine(line);
+                    psmDataContainer = exec.createDataContainer(psmSpec);
+                } else if ("PSM".equals(identifier)) { // handle PSM
+                    parsePSMLine(psmDataContainer, line);
                 } else if ("SMH".equals(identifier)) { // handle SMH
-                    DataTableSpec smSpec = parseSMHeaderLine(line);
+                    DataTableSpec smSpec = parseHeaderLine(line);
                     smallMolContainer = exec.createDataContainer(smSpec);
                 } else if ("SML".equals(identifier)) { // handle SML
                     parseSMLLine(smallMolContainer, line);
@@ -188,11 +225,25 @@ public class MzTabReaderNodeModel extends NodeModel {
                 // allow knime to cancel node execution
                 exec.checkCanceled();
             } while ((line = brReader.readLine()) != null);
+                        
+            if (proteinDataContainer==null) proteinDataContainer = exec.createDataContainer(createDummySpec("PSH"));
+            if (peptideDataContainer==null) peptideDataContainer =  exec.createDataContainer(createDummySpec("PEH"));
+            if (psmDataContainer==null)  psmDataContainer = exec.createDataContainer(createDummySpec("PSH"));
+            if (smallMolContainer==null) smallMolContainer =  exec.createDataContainer(createDummySpec("SMH"));
 
             // finalize MTD parsing
             metaDataContainer.close();
             metaDataTable = metaDataContainer.getTable();
-
+            // finalize PRT parsing
+            proteinDataContainer.close();
+            proteinDataTable = proteinDataContainer.getTable();
+            // finalize PEP parsing
+            peptideDataContainer.close();
+            peptideDataTable = peptideDataContainer.getTable();
+            // finalize PSM parsing
+            psmDataContainer.close();
+            psmDataTable = psmDataContainer.getTable();
+            
             // check if the header is valid
             smallMolContainer.close();
             smallMolTable = smallMolContainer.getTable();
@@ -203,8 +254,93 @@ public class MzTabReaderNodeModel extends NodeModel {
                 brReader.close();
         }
 
-        return new BufferedDataTable[] { metaDataTable, smallMolTable };
+        return new BufferedDataTable[] { metaDataTable, proteinDataTable,peptideDataTable,psmDataTable,smallMolTable };
     }
+    
+    
+    private void parseMTDLine(BufferedDataContainer metaDataContainer,
+            String line) throws InvalidMTDLineException {
+        String[] line_entries = line.split("\t");
+
+        // check if valid
+        if (line_entries.length != 3) {
+            throw new InvalidMTDLineException(line);
+        }
+
+        DataCell[] cells = parseGenericLine(line_entries, metaDataContainer);
+        RowKey key = new RowKey("Row " + metaDataRowIdx++);
+        DataRow row = new DefaultRow(key, cells);
+        metaDataContainer.addRowToTable(row);
+    }
+    
+    private void parsePRTLine(BufferedDataContainer proteinDataContainer,
+            String line) throws InvalidMzTabLineException,
+            InvalidMzTabFormatException {
+        String[] line_entries = line.split("\t");
+
+        // check if we already have seen a PRT line
+        if (proteinDataContainer == null) {
+            throw new InvalidMzTabFormatException("Found PRT before PRH");
+        }
+
+        // check if valid
+        if (line_entries.length != (proteinDataContainer.getTableSpec()
+                .getNumColumns() + 1)) {
+            throw new InvalidMzTabLineException(line);
+        }
+
+        DataCell[] cells = parseGenericLine(line_entries, proteinDataContainer);
+        RowKey key = new RowKey("Row " + proteinRowIdx++);
+        DataRow row = new DefaultRow(key, cells);
+        proteinDataContainer.addRowToTable(row);
+    }
+    
+    
+    private void parsePEPLine(BufferedDataContainer peptideDataContainer,
+            String line) throws InvalidMzTabLineException,
+            InvalidMzTabFormatException {
+        String[] line_entries = line.split("\t");
+
+        // check if we already have seen a PEP line
+        if (peptideDataContainer == null) {
+            throw new InvalidMzTabFormatException("Found PEP before PEH");
+        }
+
+        // check if valid
+        if (line_entries.length != (peptideDataContainer.getTableSpec()
+                .getNumColumns() + 1)) {
+            throw new InvalidMzTabLineException(line);
+        }
+
+        DataCell[] cells = parseGenericLine(line_entries, peptideDataContainer);
+        RowKey key = new RowKey("Row " + peptideRowIdx++);
+        DataRow row = new DefaultRow(key, cells);
+        peptideDataContainer.addRowToTable(row);
+    }
+    
+    private void parsePSMLine(BufferedDataContainer psmDataContainer,
+            String line) throws InvalidMzTabLineException,
+            InvalidMzTabFormatException {
+        String[] line_entries = line.split("\t");
+
+        // check if we already have seen a PSM line
+        if (psmDataContainer == null) {
+            throw new InvalidMzTabFormatException("Found PSM before PSH");
+        }
+
+        // check if valid
+        if (line_entries.length != (psmDataContainer.getTableSpec()
+                .getNumColumns() + 1)) {
+            throw new InvalidMzTabLineException(line);
+        }
+
+        DataCell[] cells = parseGenericLine(line_entries, psmDataContainer);
+        RowKey key = new RowKey("Row " + psmRowIdx++);
+        DataRow row = new DefaultRow(key, cells);
+        psmDataContainer.addRowToTable(row);
+    }
+    
+    
 
     private void parseSMLLine(BufferedDataContainer smallMolDataContainer,
             String line) throws InvalidMzTabLineException,
@@ -227,21 +363,7 @@ public class MzTabReaderNodeModel extends NodeModel {
         DataRow row = new DefaultRow(key, cells);
         smallMolDataContainer.addRowToTable(row);
     }
-
-    private void parseMTDLine(BufferedDataContainer metaDataContainer,
-            String line) throws InvalidMTDLineException {
-        String[] line_entries = line.split("\t");
-
-        // check if valid
-        if (line_entries.length != 3) {
-            throw new InvalidMTDLineException(line);
-        }
-
-        DataCell[] cells = parseGenericLine(line_entries, metaDataContainer);
-        RowKey key = new RowKey("Row " + metaDataRowIdx++);
-        DataRow row = new DefaultRow(key, cells);
-        metaDataContainer.addRowToTable(row);
-    }
+    
 
     private DataCell[] parseGenericLine(final String[] line_entries,
             BufferedDataContainer container) {
@@ -276,8 +398,9 @@ public class MzTabReaderNodeModel extends NodeModel {
         }
         return cells;
     }
+    
 
-    private DataTableSpec parseSMHeaderLine(final String line) {
+    private DataTableSpec parseHeaderLine(final String line) {
         String[] line_entries = line.split("\t");
         DataColumnSpec[] colSpecs = new DataColumnSpec[line_entries.length - 1];
 
@@ -289,6 +412,27 @@ public class MzTabReaderNodeModel extends NodeModel {
 
         return new DataTableSpec(colSpecs);
     }
+    
+    private DataTableSpec createDummySpec(String HeaderType) {
+    	String line = null;
+        if(HeaderType.equals("PRH")) line = "PRH	accession	description	taxid	species	database	database_version	search_engine	best_search_engine_score[1]	search_engine_score[1]_ms_run[1]	search_engine_score[1]_ms_run[2]	search_engine_score[1]_ms_run[3]	search_engine_score[1]_ms_run[4]	num_psms_ms_run[1]	num_psms_ms_run[2]	num_psms_ms_run[3]	num_psms_ms_run[4]	num_peptides_distinct_ms_run[1]	num_peptides_distinct_ms_run[2]	num_peptides_distinct_ms_run[3]	num_peptides_distinct_ms_run[4]	num_peptides_unique_ms_run[1]	num_peptides_unique_ms_run[2]	num_peptides_unique_ms_run[3]	num_peptides_unique_ms_run[4]	ambiguity_members	modifications	protein_coverage	protein_abundance_assay[1]	protein_abundance_assay[2]	protein_abundance_assay[3]	protein_abundance_assay[4]	protein_abundance_assay[5]	protein_abundance_assay[6]	protein_abundance_assay[7]	protein_abundance_assay[8]	protein_abundance_assay[9]	protein_abundance_assay[10]	protein_abundance_assay[11]	protein_abundance_assay[12]	protein_abundance_assay[13]	protein_abundance_assay[14]	protein_abundance_assay[15]	protein_abundance_assay[16]	protein_abundance_study_variable[1]	protein_abundance_stdev_study_variable[1]	protein_abundance_std_error_study_variable[1]	protein_abundance_study_variable[2]	protein_abundance_stdev_study_variable[2]	protein_abundance_std_error_study_variable[2]	protein_abundance_study_variable[3]	protein_abundance_stdev_study_variable[3]	protein_abundance_std_error_study_variable[3]	protein_abundance_study_variable[4]	protein_abundance_stdev_study_variable[4]	protein_abundance_std_error_study_variable[4]";
+        if(HeaderType.equals("PEH")) line = "PEH	sequence	accession	unique	database	database_version	search_engine	best_search_engine_score[1]	search_engine_score[1]_ms_run[1]	modifications	retention_time	retention_time_window	charge	mass_to_charge	spectra_ref	peptide_abundance_study_variable[1]	peptide_abundance_stdev_study_variable[1]	peptide_abundance_std_error_study_variable[1]	peptide_abundance_study_variable[2]	peptide_abundance_stdev_study_variable[2]	peptide_abundance_std_error_study_variable[2]	opt_global_modified_sequence	opt_psm_A_136.06231	opt_psm_A_330.06033	opt_psm_C_112.05108	opt_psm_C_306.0491	opt_psm_G_152.05723	opt_psm_G_346.05525	opt_psm_RNPxl:Da difference	opt_psm_RNPxl:RNA	opt_psm_RNPxl:RNA_MASS_z0	opt_psm_RNPxl:peptide_mass_z0	opt_psm_RNPxl:ppm difference	opt_psm_RNPxl:xl_mass_z0	opt_psm_RNPxl:z1 mass	opt_psm_RNPxl:z2 mass	opt_psm_RNPxl:z3 mass	opt_psm_RNPxl:z4 mass	opt_psm_U_113.03509	opt_psm_U_307.03311	opt_psm_protein_references	opt_psm_target_decoy";
+        if(HeaderType.equals("PSH")) line = "PSH	sequence	PSM_ID	accession	unique	database	database_version	search_engine	search_engine_score[1]	modifications	spectra_ref	retention_time	charge	exp_mass_to_charge	calc_mass_to_charge	pre	post	start	end ";
+        if(HeaderType.equals("SMH")) line = "SMH	identifier	chemical_formula	smiles	inchi_key	description	exp_mass_to_charge	calc_mass_to_charge	charge	retention_time	taxid	species	database	database_version	spectra_ref	search_engine	best_search_engine_score[1]	modifications" ;
+        
+        String[] line_entries = line.split("\t");
+        DataColumnSpec[] colSpecs = new DataColumnSpec[line_entries.length - 1];
+
+        for (int i = 1; i < line_entries.length; ++i) {
+            DataType type = getDataType(line_entries[i]);
+            colSpecs[i - 1] = new DataColumnSpecCreator(line_entries[i], type)
+                    .createSpec();
+        }
+
+        return new DataTableSpec(colSpecs);
+    }
+    
+    
 
     private DataType getDataType(final String fieldName) {
         if (isSMDouble(fieldName)) {
@@ -358,7 +502,7 @@ public class MzTabReaderNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs)
             throws InvalidSettingsException {
-        return new DataTableSpec[] { createMetaDataSectionSpec(), null };
+        return new DataTableSpec[] { createMetaDataSectionSpec(), null,null,null,null };
     }
 
     /**
