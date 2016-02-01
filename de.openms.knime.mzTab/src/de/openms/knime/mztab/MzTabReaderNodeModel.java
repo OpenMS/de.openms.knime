@@ -85,7 +85,7 @@ public class MzTabReaderNodeModel extends NodeModel {
     private static final NodeLogger logger = NodeLogger
             .getLogger(SmallMoleculeMzTabReaderNodeModel.class);
 
-    private int metaDataRowIdx,proteinRowIdx,peptideRowIdx,psmRowIdx, smallMolRowIdx;
+    private int metaDataRowIdx, proteinRowIdx, peptideRowIdx, psmRowIdx, smallMolRowIdx;
 
     /**
      * Create spec for meta data section.
@@ -105,14 +105,14 @@ public class MzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected MzTabReaderNodeModel() {
-        super(new PortType[] { new PortType(IURIPortObject.class) },
-                new PortType[] { 
-        		new PortType(BufferedDataTable.class),
-        		new PortType(BufferedDataTable.class),
-        		new PortType(BufferedDataTable.class),
-        		new PortType(BufferedDataTable.class),
-        		new PortType(BufferedDataTable.class),
-        });
+		super(new PortType[] { new PortType(IURIPortObject.class) },
+				new PortType[] {
+						new PortType(BufferedDataTable.class),
+						new PortType(BufferedDataTable.class),
+						new PortType(BufferedDataTable.class), 
+						new PortType(BufferedDataTable.class),
+						new PortType(BufferedDataTable.class) 
+						});
 
         metaDataRowIdx = 1;
         proteinRowIdx = 1;
@@ -176,10 +176,6 @@ public class MzTabReaderNodeModel extends NodeModel {
 
             // validate mzTab starting point
             String line = brReader.readLine();
-//            if (!line.trim().startsWith("MTD")) {
-//                throw new InvalidMzTabFormatException(
-//                        "Invalid start of file: mzTab file should start with the line: 'MTD\tmzTab-version\t1.0.0'");
-//            }
 
             // create container for meta data
             metaDataContainer = exec
@@ -226,10 +222,10 @@ public class MzTabReaderNodeModel extends NodeModel {
                 exec.checkCanceled();
             } while ((line = brReader.readLine()) != null);
                         
-            if (proteinDataContainer==null) proteinDataContainer = exec.createDataContainer(createDummySpec("PSH"));
-            if (peptideDataContainer==null) peptideDataContainer =  exec.createDataContainer(createDummySpec("PEH"));
-            if (psmDataContainer==null)  psmDataContainer = exec.createDataContainer(createDummySpec("PSH"));
-            if (smallMolContainer==null) smallMolContainer =  exec.createDataContainer(createDummySpec("SMH"));
+            if (proteinDataContainer == null) proteinDataContainer = exec.createDataContainer(createEmptySpec());
+            if (peptideDataContainer == null) peptideDataContainer =  exec.createDataContainer(createEmptySpec());
+            if (psmDataContainer == null)  psmDataContainer = exec.createDataContainer(createEmptySpec());
+            if (smallMolContainer == null) smallMolContainer =  exec.createDataContainer(createEmptySpec());
 
             // finalize MTD parsing
             metaDataContainer.close();
@@ -254,7 +250,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 brReader.close();
         }
 
-        return new BufferedDataTable[] { metaDataTable, proteinDataTable,peptideDataTable,psmDataTable,smallMolTable };
+        return new BufferedDataTable[] { metaDataTable, proteinDataTable, peptideDataTable, psmDataTable, smallMolTable };
     }
     
     
@@ -413,23 +409,8 @@ public class MzTabReaderNodeModel extends NodeModel {
         return new DataTableSpec(colSpecs);
     }
     
-    private DataTableSpec createDummySpec(String HeaderType) {
-    	String line = null;
-        if(HeaderType.equals("PRH")) line = "PRH	accession	description	taxid	species	database	database_version	search_engine	best_search_engine_score[1]	search_engine_score[1]_ms_run[1]	search_engine_score[1]_ms_run[2]	search_engine_score[1]_ms_run[3]	search_engine_score[1]_ms_run[4]	num_psms_ms_run[1]	num_psms_ms_run[2]	num_psms_ms_run[3]	num_psms_ms_run[4]	num_peptides_distinct_ms_run[1]	num_peptides_distinct_ms_run[2]	num_peptides_distinct_ms_run[3]	num_peptides_distinct_ms_run[4]	num_peptides_unique_ms_run[1]	num_peptides_unique_ms_run[2]	num_peptides_unique_ms_run[3]	num_peptides_unique_ms_run[4]	ambiguity_members	modifications	protein_coverage	protein_abundance_assay[1]	protein_abundance_assay[2]	protein_abundance_assay[3]	protein_abundance_assay[4]	protein_abundance_assay[5]	protein_abundance_assay[6]	protein_abundance_assay[7]	protein_abundance_assay[8]	protein_abundance_assay[9]	protein_abundance_assay[10]	protein_abundance_assay[11]	protein_abundance_assay[12]	protein_abundance_assay[13]	protein_abundance_assay[14]	protein_abundance_assay[15]	protein_abundance_assay[16]	protein_abundance_study_variable[1]	protein_abundance_stdev_study_variable[1]	protein_abundance_std_error_study_variable[1]	protein_abundance_study_variable[2]	protein_abundance_stdev_study_variable[2]	protein_abundance_std_error_study_variable[2]	protein_abundance_study_variable[3]	protein_abundance_stdev_study_variable[3]	protein_abundance_std_error_study_variable[3]	protein_abundance_study_variable[4]	protein_abundance_stdev_study_variable[4]	protein_abundance_std_error_study_variable[4]";
-        if(HeaderType.equals("PEH")) line = "PEH	sequence	accession	unique	database	database_version	search_engine	best_search_engine_score[1]	search_engine_score[1]_ms_run[1]	modifications	retention_time	retention_time_window	charge	mass_to_charge	spectra_ref	peptide_abundance_study_variable[1]	peptide_abundance_stdev_study_variable[1]	peptide_abundance_std_error_study_variable[1]	peptide_abundance_study_variable[2]	peptide_abundance_stdev_study_variable[2]	peptide_abundance_std_error_study_variable[2]	opt_global_modified_sequence	opt_psm_A_136.06231	opt_psm_A_330.06033	opt_psm_C_112.05108	opt_psm_C_306.0491	opt_psm_G_152.05723	opt_psm_G_346.05525	opt_psm_RNPxl:Da difference	opt_psm_RNPxl:RNA	opt_psm_RNPxl:RNA_MASS_z0	opt_psm_RNPxl:peptide_mass_z0	opt_psm_RNPxl:ppm difference	opt_psm_RNPxl:xl_mass_z0	opt_psm_RNPxl:z1 mass	opt_psm_RNPxl:z2 mass	opt_psm_RNPxl:z3 mass	opt_psm_RNPxl:z4 mass	opt_psm_U_113.03509	opt_psm_U_307.03311	opt_psm_protein_references	opt_psm_target_decoy";
-        if(HeaderType.equals("PSH")) line = "PSH	sequence	PSM_ID	accession	unique	database	database_version	search_engine	search_engine_score[1]	modifications	spectra_ref	retention_time	charge	exp_mass_to_charge	calc_mass_to_charge	pre	post	start	end ";
-        if(HeaderType.equals("SMH")) line = "SMH	identifier	chemical_formula	smiles	inchi_key	description	exp_mass_to_charge	calc_mass_to_charge	charge	retention_time	taxid	species	database	database_version	spectra_ref	search_engine	best_search_engine_score[1]	modifications" ;
-        
-        String[] line_entries = line.split("\t");
-        DataColumnSpec[] colSpecs = new DataColumnSpec[line_entries.length - 1];
-
-        for (int i = 1; i < line_entries.length; ++i) {
-            DataType type = getDataType(line_entries[i]);
-            colSpecs[i - 1] = new DataColumnSpecCreator(line_entries[i], type)
-                    .createSpec();
-        }
-
-        return new DataTableSpec(colSpecs);
+    private DataTableSpec createEmptySpec() {
+        return new DataTableSpec(new DataColumnSpec[0]);
     }
     
     
@@ -502,7 +483,7 @@ public class MzTabReaderNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs)
             throws InvalidSettingsException {
-        return new DataTableSpec[] { createMetaDataSectionSpec(), null,null,null,null };
+        return new DataTableSpec[] { createMetaDataSectionSpec(), null, null, null, null };
     }
 
     /**
