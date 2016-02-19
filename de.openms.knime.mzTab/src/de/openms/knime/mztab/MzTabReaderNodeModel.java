@@ -386,6 +386,15 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new DoubleCell(
                             Double.parseDouble(line_entries[i + 1]));
                 }
+            } else if (container.getTableSpec().getColumnSpec(i).getType() == BooleanCell.TYPE) {
+                // we need to make sure that it is a proper value
+                if (line_entries[i + 1] == null
+                        || "null".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
+                } else {
+                    cells[i] = new BooleanCell(
+                            convertToBoolean(line_entries[i + 1]));
+                }
             } else {
                 // it is a string value -> just put it into the
                 // table
@@ -395,6 +404,13 @@ public class MzTabReaderNodeModel extends NodeModel {
         return cells;
     }
     
+    private boolean convertToBoolean(String value) {
+        boolean returnValue = false;
+        if ("1".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value) || 
+            "true".equalsIgnoreCase(value) || "on".equalsIgnoreCase(value))
+            returnValue = true;
+        return returnValue;
+    }
 
     private DataTableSpec parseHeaderLine(final String line) {
         String[] line_entries = line.split("\t");
@@ -416,58 +432,60 @@ public class MzTabReaderNodeModel extends NodeModel {
     
 
     private DataType getDataType(final String fieldName) {
-        if (isSMDouble(fieldName)) {
+        if (isDouble(fieldName)) {
             return DoubleCell.TYPE;
-        } else if (isSMInt(fieldName)) {
+        } else if (isInt(fieldName)) {
             return IntCell.TYPE;
+        } else if (isBool(fieldName)) {
+            return BooleanCell.TYPE;  
         } else {
             return StringCell.TYPE;
         }
     }
 
-    // smallmolecule_abundance_assay[1-n]
-    Pattern regSmallMolAbundanceAssay = Pattern
-            .compile("^smallmolecule_abundance_assay\\[\\d*\\]$");
-    // smallmolecule_abundance_study_variable[1-n]
-    Pattern regSmallMolAbundanceStudyVar = Pattern
-            .compile("^smallmolecule_abundance_study_variable\\[\\d*\\]$");
-    // smallmolecule_abundance_stdev_study_variable[1-n]
-    Pattern regSmallMolAbundanceStdDev = Pattern
-            .compile("^smallmolecule_abundance_stdev_study_variable\\[\\d*\\]$");
-    // smallmolecule_abundance_std_error_study_variable[1-n]
-    Pattern regSmallMolAbundanceStdErr = Pattern
-            .compile("^smallmolecule_abundance_std_error_study_variable\\[\\d*\\]$");
     // best_search_engine_score[1-n] ? ParameterList
-    Pattern regSmallMolBestSearchEngineScore = Pattern
+    Pattern regBestSearchEngineScore = Pattern
             .compile("^best_search_engine_score\\[\\d*\\]$");
     // search_engine_score[1-n]_ms_run[1-n] ? ParameterList
-    Pattern regSmallMolSearchEngineScoreMsRun = Pattern
+    Pattern regSearchEngineScoreMsRun = Pattern
             .compile("^search_engine_score\\[\\d*\\]_ms_run\\[\\d*\\]$");
-
-    private boolean isSMDouble(final String fieldName) {
-        // retention time ? Double List
-
-        // exp_mass_to_charge
-        // calc_mass_to_charge
-        // + regex matching
+    // "entitiy"_abundance_"measure"_studyVariable[1-n] ? ParameterList
+    Pattern regAbundance = Pattern
+            .compile("^(?!opt_).+.*_abundance$");
+    // num_* ? ParameterList for number of peptides/psms/etc.
+    Pattern regNumberOf = Pattern
+            .compile("^num_.*$");
+            
+            
+    // TODO Maybe creating different functions for the typing of the headers of different
+    // sections is not necessary. If so, remove SM from name.
+    private boolean isDouble(final String fieldName) {
+	// Note: according to mzTab specs, retention_time could be a Double List,
+	// but this will never occur in our tools -> Double for now.
         return "exp_mass_to_charge".equals(fieldName)
                 || "calc_mass_to_charge".equals(fieldName)
-                || regSmallMolAbundanceAssay.matcher(fieldName).matches()
-                || regSmallMolAbundanceStudyVar.matcher(fieldName).matches()
-                || regSmallMolAbundanceStdDev.matcher(fieldName).matches()
-                || regSmallMolAbundanceStdErr.matcher(fieldName).matches()
-                || regSmallMolBestSearchEngineScore.matcher(fieldName)
+                || "mass_to_charge".equals(fieldName)
+                || "retention_time".equals(fieldName)
+                || "retention_time_window".equals(fieldName)
+                || "protein_coverage".equals(fieldName)
+                || regAbundance.matcher(fieldName).matches()
+                || regBestSearchEngineScore.matcher(fieldName)
                         .matches()
-                || regSmallMolSearchEngineScoreMsRun.matcher(fieldName)
+                || regSearchEngineScoreMsRun.matcher(fieldName)
                         .matches();
     }
 
-    private boolean isSMInt(final String fieldName) {
-        // charge
-        // taxid
-        // reliability
-        return "charge".equals(fieldName) || "taxid".equals(fieldName)
-                || "reliability".equals(fieldName);
+    private boolean isInt(final String fieldName) {
+        return "charge".equals(fieldName)
+        	|| "taxid".equals(fieldName)
+        	|| "start".equals(fieldName)
+        	|| "end".equals(fieldName)
+                || "reliability".equals(fieldName)
+                || regNumberOf.matcher(fieldName).matches();
+    }
+    
+    private boolean isBool(final String fieldName) {
+        return "unique".equals(fieldName)
     }
 
     /**
