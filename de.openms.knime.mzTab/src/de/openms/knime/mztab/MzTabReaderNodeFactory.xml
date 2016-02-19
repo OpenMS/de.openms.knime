@@ -13,6 +13,9 @@
     <ports>
         <inPort index="0" name="mzTab file">The mzTab file to read.</inPort>
         <outPort index="0" name="Metadata Section">The Metadata Section of the mzTab file.</outPort>
-        <outPort index="1" name="Small Molecule Section">The Small Molecule Section of the mzTab file.</outPort>        
+        <outPort index="1" name="Protein Section">The Protein Section of the mzTab file.</outPort>        
+        <outPort index="2" name="Peptide Section">The Peptide Section of the mzTab file.</outPort>        
+        <outPort index="3" name="PSM Section">The PSM Section of the mzTab file.</outPort>        
+        <outPort index="4" name="Small Molecule Section">The Small Molecule Section of the mzTab file.</outPort>        
     </ports>    
 </knimeNode>
