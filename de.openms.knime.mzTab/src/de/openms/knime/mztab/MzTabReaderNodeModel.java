@@ -51,6 +51,7 @@ import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
+import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.node.BufferedDataContainer;
@@ -392,8 +393,11 @@ public class MzTabReaderNodeModel extends NodeModel {
                         || "null".equals(line_entries[i + 1])) {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
-                    cells[i] = new BooleanCell(
-                            convertToBoolean(line_entries[i + 1]));
+                	BooleanCell cell = BooleanCell.FALSE;
+                	if (convertToBoolean(line_entries[i + 1])) {
+                		cell = BooleanCell.TRUE;
+                	}
+                	cells[i] = cell;
                 }
             } else {
                 // it is a string value -> just put it into the
@@ -429,36 +433,29 @@ public class MzTabReaderNodeModel extends NodeModel {
         return new DataTableSpec(new DataColumnSpec[0]);
     }
     
-    
-
     private DataType getDataType(final String fieldName) {
-        if (isDouble(fieldName)) {
+    	String trimmed = fieldName.trim();
+        if (isDouble(trimmed)) {
             return DoubleCell.TYPE;
-        } else if (isInt(fieldName)) {
+        } else if (isInt(trimmed)) {
             return IntCell.TYPE;
-        } else if (isBool(fieldName)) {
+        } else if (isBool(trimmed)) {
             return BooleanCell.TYPE;  
         } else {
             return StringCell.TYPE;
         }
     }
 
-    // best_search_engine_score[1-n] ? ParameterList
-    Pattern regBestSearchEngineScore = Pattern
-            .compile("^best_search_engine_score\\[\\d*\\]$");
-    // search_engine_score[1-n]_ms_run[1-n] ? ParameterList
-    Pattern regSearchEngineScoreMsRun = Pattern
-            .compile("^search_engine_score\\[\\d*\\]_ms_run\\[\\d*\\]$");
-    // "entitiy"_abundance_"measure"_studyVariable[1-n] ? ParameterList
+    // (best_)search_engine_score_...
+    Pattern regSearchEngineScore = Pattern
+            .compile("^(?!opt_).+.*search_engine_score.*$");
+    // "entitiy"_abundance_"measure"_studyVariable[1-n]
     Pattern regAbundance = Pattern
-            .compile("^(?!opt_).+.*_abundance$");
-    // num_* ? ParameterList for number of peptides/psms/etc.
+            .compile("^(?!opt_).+.*_abundance.*$");
+    // num_* for number of peptides/psms/etc.
     Pattern regNumberOf = Pattern
             .compile("^num_.*$");
-            
-            
-    // TODO Maybe creating different functions for the typing of the headers of different
-    // sections is not necessary. If so, remove SM from name.
+
     private boolean isDouble(final String fieldName) {
 	// Note: according to mzTab specs, retention_time could be a Double List,
 	// but this will never occur in our tools -> Double for now.
@@ -469,9 +466,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 || "retention_time_window".equals(fieldName)
                 || "protein_coverage".equals(fieldName)
                 || regAbundance.matcher(fieldName).matches()
-                || regBestSearchEngineScore.matcher(fieldName)
-                        .matches()
-                || regSearchEngineScoreMsRun.matcher(fieldName)
+                || regSearchEngineScore.matcher(fieldName)
                         .matches();
     }
 
@@ -480,12 +475,12 @@ public class MzTabReaderNodeModel extends NodeModel {
         	|| "taxid".equals(fieldName)
         	|| "start".equals(fieldName)
         	|| "end".equals(fieldName)
-                || "reliability".equals(fieldName)
-                || regNumberOf.matcher(fieldName).matches();
+            || "reliability".equals(fieldName)
+            || regNumberOf.matcher(fieldName).matches();
     }
     
     private boolean isBool(final String fieldName) {
-        return "unique".equals(fieldName)
+        return "unique".equals(fieldName);
     }
 
     /**
