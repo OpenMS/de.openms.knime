@@ -370,7 +370,8 @@ public class MzTabReaderNodeModel extends NodeModel {
         for (int i = 0; i < container.getTableSpec().getNumColumns(); ++i) {
             if (container.getTableSpec().getColumnSpec(i).getType() == IntCell.TYPE) {
                 if (line_entries[i + 1] == null
-                        || "null".equals(line_entries[i + 1])) {
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                     cells[i] = new IntCell(
@@ -381,7 +382,8 @@ public class MzTabReaderNodeModel extends NodeModel {
                 if (line_entries[i + 1] == null
                         || "INF".equals(line_entries[i + 1])
                         || "NaN".equals(line_entries[i + 1])
-                        || "null".equals(line_entries[i + 1])) {
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                     cells[i] = new DoubleCell(
@@ -390,7 +392,8 @@ public class MzTabReaderNodeModel extends NodeModel {
             } else if (container.getTableSpec().getColumnSpec(i).getType() == BooleanCell.TYPE) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
-                        || "null".equals(line_entries[i + 1])) {
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                 	BooleanCell cell = BooleanCell.FALSE;
