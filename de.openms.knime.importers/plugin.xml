@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+   <extension
+         point="org.knime.base.filehandling.mimetypes">
+      <mimetype
+            name="application/x-mzml">
+         <fileextension
+               name="mzml">
+         </fileextension>
+      </mimetype>
+   </extension>
+   <extension
+         point="com.genericworkflownodes.knime.mime.demangler.Demangler">
+      <demangler
+            class="de.openms.knime.importers.mzml.MzMLChromatogramImporter">
+      </demangler>
+      <demangler
+            class="de.openms.knime.importers.mzml.MzMLSpectrumImporter">
+      </demangler>
+   </extension>
+</plugin>
