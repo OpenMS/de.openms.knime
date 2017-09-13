@@ -48,12 +48,13 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(OpenMSStartupMessageProvider.class);
 	
-	private static final String OPENMS_REQUIREMENTS_URI = "http://sourceforge.net/projects/open-ms/files/OpenMS/OpenMS-1.10/OpenMS-1.10-win32-prerequisites-installer.exe/download";
+	private static final String OPENMS_REQUIREMENTS_URI = "https://sourceforge.net/projects/open-ms/files/OpenMS/OpenMS-2.3/OpenMS-2.3-prerequisites-installer.exe/download";
 
 	private static final String REG_DWORD_1 = "0x1";
 	private static final String VCREDIST_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x64";
 	private static final String VCREDIST_X86_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
 	private static final String VCREDIST_X86_ALT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
+	private static final String VCREDIST14_OPENMS_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\14.0\\VC\\Runtimes\\x64";
 	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
 	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
 	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
@@ -97,8 +98,13 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 									REG_DWORD_1);
 					LOGGER.debug("VC10 x64 Redist Value exists: "
 							+ vcRedist2010_x64ValueExists);
+					boolean vcRedist2014_x64ValueExists = WinRegistryQuery
+							.checkDWord(VCREDIST14_OPENMS_X64_KEY, "Installed",
+									REG_DWORD_1);
+					LOGGER.debug("VC14 x64 Redist Value exists: "
+							+ vcRedist2014_x64ValueExists);
 
-					if (!vcRedist2010_x64ValueExists) {
+					if (!(vcRedist2010_x64ValueExists && vcRedist2014_x64ValueExists)) {
 						return getWarning();
 					}
 				}
