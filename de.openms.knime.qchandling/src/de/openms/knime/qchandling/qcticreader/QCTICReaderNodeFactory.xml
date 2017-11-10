@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./default.png" type="Source">
+    <name>QCTICReader</name>
+    
+    <shortDescription>
+        Reads QC Total Ion Current (TIC) information from a CSV file generated with the QCExporter.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Reads QC Total Ion Current (TIC) information from a CSV file generated with the QCExporter.</intro>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="QCTIC file [csv]">CSV file containing the QC Total Ion Current (TIC) information created by the QCExporter.</inPort>
+        <outPort index="0" name="QCTIC table">Table containing the QC Total Ion Current (TIC) information.</outPort>
+    </ports>  
+</knimeNode>

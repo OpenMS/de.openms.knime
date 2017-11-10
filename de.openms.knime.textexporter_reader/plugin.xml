@@ -9,9 +9,9 @@
 	</extension>
    
    <extension point="org.knime.workbench.repository.nodes">
-      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory" id="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"/>            
-      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.featureTextReader.FeatureTextReaderNodeFactory" id="de.openms.knime.featureTextReader.FeatureTextReaderNodeFactory"/>
-      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.idTextReader.IDTextReaderNodeFactory" id="de.openms.knime.idTextReader.IDTextReaderNodeFactory"/>
+      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.consensusTextReader.ConsensusTextReaderNodeFactory"/>            
+      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.featureTextReader.FeatureTextReaderNodeFactory"/>
+      <node category-path="/community/OpenMS/Conversion" factory-class="de.openms.knime.idTextReader.IDTextReaderNodeFactory"/>
    </extension>
    
 </plugin>

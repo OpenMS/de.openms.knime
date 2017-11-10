@@ -25,6 +25,7 @@ import com.genericworkflownodes.knime.mime.demangler.DemanglerException;
 import com.genericworkflownodes.knime.mime.demangler.IDemangler;
 
 import uk.ac.ebi.jmzml.model.mzml.BinaryDataArray;
+import uk.ac.ebi.jmzml.model.mzml.BinaryDataArrayList;
 import uk.ac.ebi.jmzml.model.mzml.CVParam;
 import uk.ac.ebi.jmzml.model.mzml.Scan;
 import uk.ac.ebi.jmzml.model.mzml.Spectrum;
@@ -112,27 +113,35 @@ public class MzMLSpectrumImporter implements IDemangler {
 			}
 		}
 		
-		List<BinaryDataArray> arrays = spectrum.getBinaryDataArrayList().getBinaryDataArray();
-		BinaryDataArray mz = null;
-		BinaryDataArray intensity = null;
-		for (BinaryDataArray bda : arrays) {
-			for (CVParam p : bda.getCvParam()) {
-				if (p.getName().equals("m/z array")) {
-					mz = bda;
-				} else if (p.getName().equals("intensity array")) {
-					intensity = bda;
+		BinaryDataArrayList arraylists = spectrum.getBinaryDataArrayList();
+		if (arraylists != null) {
+			List<BinaryDataArray> arrays = arraylists.getBinaryDataArray();
+			BinaryDataArray mz = null;
+			BinaryDataArray intensity = null;
+			for (BinaryDataArray bda : arrays) {
+				for (CVParam p : bda.getCvParam()) {
+					if (p.getName().equals("m/z array")) {
+						mz = bda;
+					} else if (p.getName().equals("intensity array")) {
+						intensity = bda;
+					}
 				}
 			}
+			if (mz == null) {
+				throw new DemanglerException("The m/z array could not be found in the mzML file.");
+			}
+			if (intensity == null) {
+				throw new DemanglerException("The intensity array could not be found in the mzML file.");
+			}
+			return new DefaultRow(new RowKey(id), new IntCell(msLevel), new DoubleCell(time),
+					MzMLHelper.numberArrayToListCell(mz.getBinaryDataAsNumberArray()),
+					MzMLHelper.numberArrayToListCell(intensity.getBinaryDataAsNumberArray()));
 		}
-		if (mz == null) {
-			throw new DemanglerException("The m/z array could not be found in the mzML file.");
-		}
-		if (intensity == null) {
-			throw new DemanglerException("The intensity array could not be found in the mzML file.");
-		}
+		//TODO Warn that no arrays were found? Throw error?
+		//For now, return empty arrays, such that at least the metainfo is recorded.
 		return new DefaultRow(new RowKey(id), new IntCell(msLevel), new DoubleCell(time),
-				MzMLHelper.numberArrayToListCell(mz.getBinaryDataAsNumberArray()),
-				MzMLHelper.numberArrayToListCell(intensity.getBinaryDataAsNumberArray()));
+				MzMLHelper.numberArrayToListCell(new Number[0]),
+				MzMLHelper.numberArrayToListCell(new Number[0]));
 	}
 
 	@Override
