@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse version="3.4"?>
+
+<plugin>
+	<extension point="org.knime.workbench.repository.categories">
+		<category description="/community/OpenMS" icon="icons/category.png" level-id="OpenMS" name="OpenMS" path="/community"/>
+		<category description="/community/OpenMS/QCFileHandling" icon="icons/category.png" level-id="QCFileHandling" name="QCFileHandling" path="/community/OpenMS"/>		
+	</extension>
+   	<extension point="org.knime.workbench.repository.nodes">
+   		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcticreader.QCTICReaderNodeFactory"/>
+		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcfeaturereader.QCFeatureReaderNodeFactory"/>
+		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcidreader.QCIDReaderNodeFactory"/>
+		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcprecursorreader.QCPrecursorReaderNodeFactory"/>
+		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcsetidreader.QCSetIdReaderNodeFactory"/>
+		<node category-path="/community/OpenMS/QCFileHandling" factory-class="de.openms.knime.qchandling.qcioninjectiontimereader.QCIonInjectionTimeReaderNodeFactory"/>
+</extension>
+</plugin>

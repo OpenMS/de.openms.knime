@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./default.png" type="Source">
+    <name>QCIonInjectionTimeReader</name>
+    
+    <shortDescription>
+        Reads QC Ion injection time summary from a CSV file generated with the QCExporter.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Reads QC Ion injection time summary from a CSV file generated with the QCExporter.</intro>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="QCIonInjectionTime file [csv]">CSV file containing the QC Ion injection time summary created by the QCExporter.</inPort>
+        <outPort index="0" name="QCIonInjectionTime table">Table containing the QC Ion injection time summary.</outPort>
+    </ports>  
+</knimeNode>

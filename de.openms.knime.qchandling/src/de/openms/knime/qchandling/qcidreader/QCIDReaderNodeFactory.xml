@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./default.png" type="Source">
+    <name>QCIDReader</name>
+    
+    <shortDescription>
+        Reads QC Id information from a CSV file generated with the QCExporter.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>Reads QC Id information from a CSV file generated with the QCExporter.</intro>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="QCId file [csv]">CSV file containing the QC Id information created by the QCExporter.</inPort>
+        <outPort index="0" name="QCId table">Table containing the QC Id information.</outPort>
+    </ports>    
+</knimeNode>
