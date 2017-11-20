@@ -12,7 +12,7 @@ Require-Bundle: org.knime.base;bundle-version="[3.0.0,4.0.0)",
  org.apache.commons.codec;bundle-version="1.6.0",
  org.slf4j.api;bundle-version="1.7.2"
 Eclipse-RegisterBuddy: org.knime.core
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: bin/,
  lib/antlr-2.7.7.jar,
  lib/cpdetector-1.0.7.jar,
