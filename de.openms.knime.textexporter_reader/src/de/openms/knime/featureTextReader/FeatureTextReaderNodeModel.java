@@ -13,7 +13,6 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -31,16 +30,12 @@ import de.openms.knime.TextExporterParser;
  */
 public class FeatureTextReaderNodeModel extends NodeModel {
 
-    // the logger instance
-    private static final NodeLogger logger = NodeLogger
-            .getLogger(FeatureTextReaderNodeModel.class);
-
     /**
      * Constructor for the node model.
      */
     protected FeatureTextReaderNodeModel() {
-        super(new PortType[] { new PortType(IURIPortObject.class) },
-                new PortType[] { new PortType(BufferedDataTable.class) });
+        super(new PortType[] { IURIPortObject.TYPE },
+                new PortType[] { BufferedDataTable.TYPE });
     }
 
     /**

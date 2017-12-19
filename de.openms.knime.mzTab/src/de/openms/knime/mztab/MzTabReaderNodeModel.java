@@ -106,14 +106,12 @@ public class MzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected MzTabReaderNodeModel() {
-		super(new PortType[] { new PortType(IURIPortObject.class) },
-				new PortType[] {
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class), 
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class) 
-						});
+		super(new PortType[] { IURIPortObject.TYPE },
+				new PortType[] { BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE});
 
         metaDataRowIdx = 1;
         proteinRowIdx = 1;
