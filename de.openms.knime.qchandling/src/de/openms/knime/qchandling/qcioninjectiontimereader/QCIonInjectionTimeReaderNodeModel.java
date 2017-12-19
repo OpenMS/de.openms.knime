@@ -56,7 +56,7 @@ public class QCIonInjectionTimeReaderNodeModel extends NodeModel {
      * @return The outgoing {@link PortType}s of this node.
      */
     private static PortType[] getOutgoingPorts() {
-        return new PortType[] { new PortType(BufferedDataTable.class) };
+        return new PortType[] { BufferedDataTable.TYPE };
     }
 
     /**

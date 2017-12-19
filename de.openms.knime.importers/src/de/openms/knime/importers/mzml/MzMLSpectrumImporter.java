@@ -13,7 +13,6 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.RowKey;
-import org.knime.core.data.collection.CollectionCellFactory;
 import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;

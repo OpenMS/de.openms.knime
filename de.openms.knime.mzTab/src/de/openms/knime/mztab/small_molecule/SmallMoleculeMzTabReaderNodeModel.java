@@ -93,8 +93,8 @@ public class SmallMoleculeMzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected SmallMoleculeMzTabReaderNodeModel() {
-        super(new PortType[] { new PortType(IURIPortObject.class) },
-                new PortType[] { new PortType(BufferedDataTable.class) });
+        super(new PortType[] { IURIPortObject.TYPE },
+                new PortType[] { BufferedDataTable.TYPE });
     }
 
     /**
