@@ -47,11 +47,11 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.data.def.StringCell;
-import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
 import org.knime.core.node.BufferedDataContainer;
@@ -67,6 +67,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
+import org.knime.core.node.port.PortTypeRegistry;
 
 import de.openms.knime.InvalidInputException;
 import de.openms.knime.mztab.exceptions.InvalidMTDLineException;
@@ -106,15 +107,14 @@ public class MzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected MzTabReaderNodeModel() {
-		super(new PortType[] { new PortType(IURIPortObject.class) },
-				new PortType[] {
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class), 
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class) 
+		super(new PortType[] { PortTypeRegistry.getInstance().getPortType(IURIPortObject.class) },
+				new PortType[] {PortTypeRegistry.getInstance().getPortType(BufferedDataTable.class),
+						PortTypeRegistry.getInstance().getPortType(BufferedDataTable.class),
+						PortTypeRegistry.getInstance().getPortType(BufferedDataTable.class), 
+						PortTypeRegistry.getInstance().getPortType(BufferedDataTable.class),
+						PortTypeRegistry.getInstance().getPortType(BufferedDataTable.class) 
 						});
-
+		
         metaDataRowIdx = 1;
         proteinRowIdx = 1;
         peptideRowIdx = 1;
