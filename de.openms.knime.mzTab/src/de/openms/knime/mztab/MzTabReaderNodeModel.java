@@ -400,6 +400,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                 	ArrayList<DoubleCell> lc = new ArrayList<DoubleCell>();
+                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
                 	for (String dstr : line_entries[i + 1].split("\\|"))
                 	{
                 		double d = Double.parseDouble(dstr);
@@ -481,8 +482,6 @@ public class MzTabReaderNodeModel extends NodeModel {
             .compile("^num_.*$");
 
     private boolean isDouble(final String fieldName) {
-	// Note: according to mzTab specs, retention_time could be a Double List,
-	// but this will never occur in our tools -> Double for now.
         return "exp_mass_to_charge".equals(fieldName)
                 || "calc_mass_to_charge".equals(fieldName)
                 || "mass_to_charge".equals(fieldName)
@@ -493,8 +492,6 @@ public class MzTabReaderNodeModel extends NodeModel {
     }
     
     private boolean isDoubleList(final String fieldName) {
-	// Note: according to mzTab specs, retention_time could be a Double List,
-	// but this will never occur in our tools -> Double for now.
         return "retention_time".equals(fieldName)
                 || "retention_time_window".equals(fieldName);
     }
