@@ -36,6 +36,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -47,6 +48,8 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.collection.CollectionCellFactory;
+import org.knime.core.data.collection.ListCell;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
@@ -106,13 +109,13 @@ public class MzTabReaderNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     protected MzTabReaderNodeModel() {
-		super(new PortType[] { new PortType(IURIPortObject.class) },
+		super(new PortType[] { IURIPortObject.TYPE },
 				new PortType[] {
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class), 
-						new PortType(BufferedDataTable.class),
-						new PortType(BufferedDataTable.class) 
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE, 
+						BufferedDataTable.TYPE,
+						BufferedDataTable.TYPE 
 						});
 
         metaDataRowIdx = 1;
@@ -389,6 +392,22 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new DoubleCell(
                             Double.parseDouble(line_entries[i + 1]));
                 }
+            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(DoubleCell.TYPE)) {
+                // we need to make sure that it is a proper value
+                if (line_entries[i + 1] == null
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
+                } else {
+                	ArrayList<DoubleCell> lc = new ArrayList<DoubleCell>();
+                	for (String dstr : line_entries[i + 1].split("\\|"))
+                	{
+                		double d = Double.parseDouble(dstr);
+                		lc.add(new DoubleCell(d));
+                	}
+                	ListCell outputCell = CollectionCellFactory.createListCell(lc);
+                	cells[i] = outputCell;
+                }
             } else if (container.getTableSpec().getColumnSpec(i).getType() == BooleanCell.TYPE) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
@@ -443,7 +462,9 @@ public class MzTabReaderNodeModel extends NodeModel {
         } else if (isInt(trimmed)) {
             return IntCell.TYPE;
         } else if (isBool(trimmed)) {
-            return BooleanCell.TYPE;  
+            return BooleanCell.TYPE;
+        } else if (isDoubleList(trimmed)) {
+            return ListCell.getCollectionType(DoubleCell.TYPE);
         } else {
             return StringCell.TYPE;
         }
@@ -465,12 +486,17 @@ public class MzTabReaderNodeModel extends NodeModel {
         return "exp_mass_to_charge".equals(fieldName)
                 || "calc_mass_to_charge".equals(fieldName)
                 || "mass_to_charge".equals(fieldName)
-                || "retention_time".equals(fieldName)
-                || "retention_time_window".equals(fieldName)
                 || "protein_coverage".equals(fieldName)
                 || regAbundance.matcher(fieldName).matches()
                 || regSearchEngineScore.matcher(fieldName)
                         .matches();
+    }
+    
+    private boolean isDoubleList(final String fieldName) {
+	// Note: according to mzTab specs, retention_time could be a Double List,
+	// but this will never occur in our tools -> Double for now.
+        return "retention_time".equals(fieldName)
+                || "retention_time_window".equals(fieldName);
     }
 
     private boolean isInt(final String fieldName) {
