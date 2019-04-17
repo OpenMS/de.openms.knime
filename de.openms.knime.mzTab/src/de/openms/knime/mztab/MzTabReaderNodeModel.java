@@ -75,7 +75,6 @@ import de.openms.knime.InvalidInputException;
 import de.openms.knime.mztab.exceptions.InvalidMTDLineException;
 import de.openms.knime.mztab.exceptions.InvalidMzTabFormatException;
 import de.openms.knime.mztab.exceptions.InvalidMzTabLineException;
-import de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeModel;
 
 /**
  * This is the model implementation of MzTabReader. Converts mzTab files into
@@ -87,7 +86,7 @@ public class MzTabReaderNodeModel extends NodeModel {
 
     // the logger instance
     private static final NodeLogger logger = NodeLogger
-            .getLogger(SmallMoleculeMzTabReaderNodeModel.class);
+            .getLogger(MzTabReaderNodeModel.class);
 
     private int metaDataRowIdx, proteinRowIdx, peptideRowIdx, psmRowIdx, smallMolRowIdx;
 
