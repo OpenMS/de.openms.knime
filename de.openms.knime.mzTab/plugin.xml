@@ -12,9 +12,6 @@
          point="org.knime.workbench.repository.nodes">
       <node
             category-path="/community/OpenMS/Conversion/mzTab"
-            factory-class="de.openms.knime.mztab.small_molecule.SmallMoleculeMzTabReaderNodeFactory"/>
-      <node
-            category-path="/community/OpenMS/Conversion/mzTab"
             factory-class="de.openms.knime.mztab.MzTabReaderNodeFactory"/>
    </extension>
    <extension
