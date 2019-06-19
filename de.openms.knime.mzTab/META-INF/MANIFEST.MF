@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-Require-Bundle: org.knime.workbench.core;bundle-version="[3.0.0,4.0.0)",
- org.knime.base;bundle-version="[3.0.0,4.0.0)",
- org.knime.core.data.uritype;bundle-version="[3.0.0,4.0.0)"
+Require-Bundle: org.knime.workbench.core;bundle-version="[3.0.0,5.0.0)",
+ org.knime.base;bundle-version="[3.0.0,5.0.0)",
+ org.knime.core.data.uritype;bundle-version="[3.0.0,5.0.0)"
 Bundle-Vendor: The OpenMS Team
 Bundle-ActivationPolicy: lazy
 Bundle-Version: 0.1.1.qualifier
