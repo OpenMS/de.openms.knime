@@ -48,18 +48,17 @@ public class WinRegistryQuery {
 	 * 
 	 * @param key
 	 *            The registry key.
-	 * @param value
+	 * @param valueName
 	 *            The registry value.
 	 * @return
 	 */
-	public static boolean checkDWord(final String key, final String value,
-			final String expectedValue) {
+	public static String getDWordValue(final String key, final String valueName) {
 
 		try {
 			String keyAsCmdParameter = "\"" + key + "\"";
 
 			ProcessBuilder processBuilder = new ProcessBuilder("reg", "query",
-					keyAsCmdParameter, "/v", value, "/t", "REG_DWORD");
+					keyAsCmdParameter, "/v", valueName, "/t", "REG_DWORD");
 			Process process = processBuilder.start();
 
 			// fetch return code
@@ -69,11 +68,11 @@ public class WinRegistryQuery {
 			String stdErr = extractStdMessages(process.getErrorStream());
 
 			if (returnCode != 0)
-				return false;
+				return "";
 
 			// we expect the error output to be empty
 			if (stdErr.trim().length() > 0)
-				return false;
+				return "";
 
 			// parse the output line by line and check if we find the hit we
 			// were looking for
@@ -81,20 +80,53 @@ public class WinRegistryQuery {
 			for (int i = 0; i < lines.length; ++i) {
 				if (key.equals(lines[i].trim())) {
 					++i; // check the next line for the value
-					if (lines[i].trim().startsWith(value)) {
-						return lines[i].endsWith(expectedValue);
+					if (lines[i].trim().startsWith(valueName)) {
+						return lines[i].split("\\s+")[2];
 					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
+			return "";
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			return false;
+			return "";
 		}
 		// the fallback
-		return false;
+		return "";
+	}
+	
+	/**
+	 * Check if the given key/value pair has a dword value of 0x1.
+	 * 
+	 * @param key
+	 *            The registry key.
+	 * @param value
+	 *            The registry value.
+	 * @return
+	 */
+	public static boolean checkDWord(final String key, final String valueName,
+			final String expectedValue) {
+		return getDWordValue(key, valueName) == expectedValue;
+	}
+	
+	/**
+	 * Check if the given key/value pair has a dword value of 0x1.
+	 * 
+	 * @param key
+	 *            The registry key.
+	 * @param value
+	 *            The registry value.
+	 * @return
+	 */
+	public static boolean checkDWordGreater(final String key, final String valueName,
+			final int expectedValue, boolean checkGreaterEq) {
+		Integer actual = Integer.parseInt(getDWordValue(key, valueName));
+		if (checkGreaterEq) {
+			return actual >= expectedValue;
+		} else {
+			return actual < expectedValue;
+		}
 	}
 
 	private static String extractStdMessages(InputStream stream)
