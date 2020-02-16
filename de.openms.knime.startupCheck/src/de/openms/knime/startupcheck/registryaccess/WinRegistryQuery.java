@@ -81,7 +81,7 @@ public class WinRegistryQuery {
 				if (key.equals(lines[i].trim())) {
 					++i; // check the next line for the value
 					if (lines[i].trim().startsWith(valueName)) {
-						return lines[i].split("\\s+")[2];
+						return lines[i].trim().split("\\s+")[2];
 					}
 				}
 			}
