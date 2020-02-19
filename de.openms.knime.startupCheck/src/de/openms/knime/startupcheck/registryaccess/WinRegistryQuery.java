@@ -43,6 +43,21 @@ import java.io.InputStreamReader;
  */
 public class WinRegistryQuery {
 
+	public static String extractFromStdout(final String key, final String valueName, String stdOut) {
+		// parse the output line by line and check if we find the hit we
+		// were looking for
+		String[] lines = stdOut.split(System.getProperty("line.separator"));
+		for (int i = 0; i < lines.length; ++i) {
+			if (key.equals(lines[i].trim())) {
+				++i; // check the next line for the value
+				if (lines[i].trim().startsWith(valueName)) {
+					return lines[i].trim().split("\\s+")[2];
+				}
+			}
+		}
+		return "";
+	}
+	
 	/**
 	 * Check if the given key/value pair has a dword value of 0x1.
 	 * 
@@ -74,17 +89,7 @@ public class WinRegistryQuery {
 			if (stdErr.trim().length() > 0)
 				return "";
 
-			// parse the output line by line and check if we find the hit we
-			// were looking for
-			String[] lines = stdOut.split(System.getProperty("line.separator"));
-			for (int i = 0; i < lines.length; ++i) {
-				if (key.equals(lines[i].trim())) {
-					++i; // check the next line for the value
-					if (lines[i].trim().startsWith(valueName)) {
-						return lines[i].trim().split("\\s+")[2];
-					}
-				}
-			}
+			return extractFromStdout(key, valueName, stdOut);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return "";
@@ -92,9 +97,9 @@ public class WinRegistryQuery {
 			e.printStackTrace();
 			return "";
 		}
-		// the fallback
-		return "";
 	}
+	
+
 	
 	/**
 	 * Check if the given key/value pair has a dword value of 0x1.
@@ -121,7 +126,7 @@ public class WinRegistryQuery {
 	 */
 	public static boolean checkDWordGreater(final String key, final String valueName,
 			final int expectedValue, boolean checkGreaterEq) {
-		Integer actual = Integer.parseInt(getDWordValue(key, valueName));
+		Integer actual = Integer.decode(getDWordValue(key, valueName));
 		if (checkGreaterEq) {
 			return actual >= expectedValue;
 		} else {

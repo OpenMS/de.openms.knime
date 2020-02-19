@@ -30,13 +30,12 @@
  */
 package de.openms.knime.startupcheck.registryaccess;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 /**
- * @author aiche
+ * @author aiche, jpfeuffer
  * 
  */
 public class WinRegistryQueryTest {
@@ -48,14 +47,16 @@ public class WinRegistryQueryTest {
 	 */
 	@Test
 	public void testCheckDWord() {
-		assertTrue(WinRegistryQuery
-				.checkDWord(
-						"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client",
-						"Install", "0x1"));
-		assertFalse(WinRegistryQuery
-				.checkDWord(
-						"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client",
-						"Install", "0x0"));
+		String stdOut = "\n" + 
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64\n" + 
+				"    Bld    REG_DWORD    0x6dff\n" + 
+				"\n" + 
+				"End of search: 1 match(es) found.\n" + 
+				"";
+		assertEquals(WinRegistryQuery
+				.extractFromStdout("HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64", "Bld", stdOut), "0x6dff");
+		Integer i = 0x6dff;
+		assertEquals(Integer.decode("0x6dff"), i);
 	}
 
 }
