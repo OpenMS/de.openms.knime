@@ -31,6 +31,7 @@
 package de.openms.knime.startupcheck;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.knime.core.node.NodeLogger;
@@ -52,9 +53,17 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 
 	private static final String REG_DWORD_1 = "0x1";
 	private static final int BLD_DWORD_VALUE = 0x6ddf; // since VS2015 the registry key is the same. We need to check the min. build number now.
-	private static final String VCREDIST_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x64";
-	private static final String VCREDIST_X86_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
-	private static final String VCREDIST_X86_ALT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86";
+	
+	private static ArrayList<String> pwizkeys = new ArrayList<String>(
+			Arrays.asList(
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Products\\1af2a8da7e60d0b429d7e6453b3d0182",
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Products\\67D6ECF5CD5FBA732B8B22BAC8DE1B4D",
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Products\\1926E8D15D0BCE53481466615F760A7F"));
+	private static ArrayList<String> pwizkeysnew = new ArrayList<String>(
+			Arrays.asList(
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{ca67548a-5ebe-413a-b50c-4b9ceb6d66c6}",
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{050d4fc8-5d48-4b8f-8972-47c82c46020f}"
+				));
 	private static final String VCREDIST14_OPENMS_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64";
 	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
 	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
@@ -65,51 +74,56 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 		try {
 			if (isWindows()) {
 
-				boolean dotNet4ValueClientExists = WinRegistryQuery.checkDWord(
-						NET4_CLIENT_KEY, "Install", REG_DWORD_1);
+				boolean dotNet4ValueClientExists = WinRegistryQuery.checkValue(
+						NET4_CLIENT_KEY, "REG_DWORD", "Install", REG_DWORD_1);
 				LOGGER.debug(".NET4 Client Value exists: "
 						+ dotNet4ValueClientExists);
 
-				boolean dotNet4ValueFullExists = WinRegistryQuery.checkDWord(
-						NET4_FULL_KEY, "Install", REG_DWORD_1);
+				boolean dotNet4ValueFullExists = WinRegistryQuery.checkValue(
+						NET4_FULL_KEY, "REG_DWORD", "Install", REG_DWORD_1);
 				LOGGER.debug(".NET4 Full Value exists: "
 						+ dotNet4ValueFullExists);
 
-				boolean dotNet35ValueExists = WinRegistryQuery.checkDWord(
-						NET35_KEY, "Install", REG_DWORD_1);
+				boolean dotNet35ValueExists = WinRegistryQuery.checkValue(
+						NET35_KEY, "REG_DWORD", "Install", REG_DWORD_1);
 				LOGGER.debug(".NET3.5 1031 Value exists: "
 						+ dotNet35ValueExists);
 
-				boolean vcRedist2010_x86ValueExists = 
-						WinRegistryQuery
-						.checkDWord(VCREDIST_X86_KEY, "Installed", REG_DWORD_1) ||
-						WinRegistryQuery
-						.checkDWord(VCREDIST_X86_ALT_KEY, "Installed", REG_DWORD_1);
-				LOGGER.debug("VC10 x86 Redist Value exists: "
-						+ vcRedist2010_x86ValueExists);
-
-				if (!(vcRedist2010_x86ValueExists && dotNet35ValueExists
+				if (!(dotNet35ValueExists
 						&& dotNet4ValueClientExists && dotNet4ValueFullExists)) {
 					return getWarning();
 				}
 
 				if (is64BitSystem()) {
-					boolean vcRedist2010_x64ValueExists = WinRegistryQuery
-							.checkDWord(VCREDIST_X64_KEY, "Installed",
-									REG_DWORD_1);
-					LOGGER.debug("VC10 x64 Redist Value exists: "
-							+ vcRedist2010_x64ValueExists);
+					boolean pwizok = true;
+					for (String key : pwizkeys)
+					{
+						pwizok = pwizok && WinRegistryQuery
+								.checkValue(key, "REG_DWORD", "Assignment",
+										REG_DWORD_1);
+					}
+					
+					for (String key : pwizkeysnew)
+					{
+						pwizok = pwizok && !WinRegistryQuery
+								.getValue(key, "REG_SZ", "Version").equals("");
+					}
+					
 					boolean vcRedist2014_x64ValueExists = WinRegistryQuery
-							.checkDWord(VCREDIST14_OPENMS_X64_KEY, "Installed",
+							.checkValue(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Installed",
 									REG_DWORD_1);
 					LOGGER.debug("VC14 x64 Redist Value exists: "
 							+ vcRedist2014_x64ValueExists);
 					boolean vcRedist2014_x64BldValueEnough = WinRegistryQuery
-							.checkDWordGreater(VCREDIST14_OPENMS_X64_KEY, "Bld",
+							.checkValueGreater(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Bld",
 									BLD_DWORD_VALUE, true);
+					LOGGER.debug("VC14 x64 Redist Value large enough.");
 
-					if (!(vcRedist2010_x64ValueExists && vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
+					if (!(vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
 						return getWarning();
+					}
+					if (!pwizok) {
+						return getPwizWarning();
 					}
 				}
 			}
@@ -124,7 +138,21 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 				.format("Some of the requirements for the OpenMS KNIME Nodes are missing on your system. " +
 						"Please download the requirements installer from <a href=\"%s\">here</a>.",
 						OPENMS_REQUIREMENTS_URI);
-		final String shortMessage = "Some of the OpenMS KNIME Nodes requirements are missing. Double click for details.";
+		final String shortMessage = "Some of the OpenMS KNIME Nodes requirements might be missing. Double click for details.";
+
+		StartupMessage message = new StartupMessage(longMessage, shortMessage,
+				StartupMessage.WARNING, Activator.getInstance().getBundle());
+		List<StartupMessage> messages = new ArrayList<StartupMessage>();
+		messages.add(message);
+		return messages;
+	}
+	
+	private List<StartupMessage> getPwizWarning() {
+		final String longMessage = String
+				.format("OpenMS FileConverter for RAW formats depends on ProteoWizard. Not all dependencies found." +
+						"Consider installing ALL redistributables from <a href=\"%s\">here</a>.",
+						"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads");
+		final String shortMessage = "Some of the OpenMS FileConverter requirements might be missing. Double click for details.";
 
 		StartupMessage message = new StartupMessage(longMessage, shortMessage,
 				StartupMessage.WARNING, Activator.getInstance().getBundle());

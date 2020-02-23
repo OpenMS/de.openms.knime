@@ -59,7 +59,7 @@ public class WinRegistryQuery {
 	}
 	
 	/**
-	 * Check if the given key/value pair has a dword value of 0x1.
+	 * Check
 	 * 
 	 * @param key
 	 *            The registry key.
@@ -67,13 +67,13 @@ public class WinRegistryQuery {
 	 *            The registry value.
 	 * @return
 	 */
-	public static String getDWordValue(final String key, final String valueName) {
+	public static String getValue(final String key, final String type, final String valueName) {
 
 		try {
 			String keyAsCmdParameter = "\"" + key + "\"";
 
 			ProcessBuilder processBuilder = new ProcessBuilder("reg", "query",
-					keyAsCmdParameter, "/v", valueName, "/t", "REG_DWORD");
+					keyAsCmdParameter, "/v", valueName, "/t", type);
 			Process process = processBuilder.start();
 
 			// fetch return code
@@ -110,9 +110,9 @@ public class WinRegistryQuery {
 	 *            The registry value.
 	 * @return
 	 */
-	public static boolean checkDWord(final String key, final String valueName,
+	public static boolean checkValue(final String key, final String type, final String valueName,
 			final String expectedValue) {
-		return getDWordValue(key, valueName) == expectedValue;
+		return getValue(key, type, valueName).equals(expectedValue);
 	}
 	
 	/**
@@ -124,9 +124,9 @@ public class WinRegistryQuery {
 	 *            The registry value.
 	 * @return
 	 */
-	public static boolean checkDWordGreater(final String key, final String valueName,
+	public static boolean checkValueGreater(final String key, final String type, final String valueName,
 			final int expectedValue, boolean checkGreaterEq) {
-		Integer actual = Integer.decode(getDWordValue(key, valueName));
+		Integer actual = Integer.decode(getValue(key, type, valueName));
 		if (checkGreaterEq) {
 			return actual >= expectedValue;
 		} else {
