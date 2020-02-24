@@ -150,8 +150,9 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private List<StartupMessage> getPwizWarning() {
 		final String longMessage = String
 				.format("OpenMS FileConverter for RAW formats depends on ProteoWizard. Not all dependencies found." +
-						"Consider installing ALL redistributables from <a href=\"%s\">here</a>.",
-						"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads");
+						"Try our prerequisites installer <a href=\"%s\">here</a> first. If it does not help, " +
+						"consider installing ALL redistributables from <a href=\"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads\">here</a>.",
+						OPENMS_REQUIREMENTS_URI);
 		final String shortMessage = "Some of the OpenMS FileConverter requirements might be missing. Double click for details.";
 
 		StartupMessage message = new StartupMessage(longMessage, shortMessage,
