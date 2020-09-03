@@ -5,3 +5,7 @@ bin/
 *.jar
 *.war
 *.ear
+
+**/target/**
+de.openms.maven/**
+de.openms.knime.update/**
