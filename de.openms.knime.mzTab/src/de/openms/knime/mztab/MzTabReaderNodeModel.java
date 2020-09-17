@@ -201,22 +201,22 @@ public class MzTabReaderNodeModel extends NodeModel {
                 if ("MTD".equals(identifier)) { // handle MTD
                     parseMTDLine(metaDataContainer, line);
                 } else if ("PRH".equals(identifier)) { // handle PRH
-                    DataTableSpec proteinSpec = parseHeaderLine(line);
+                    DataTableSpec proteinSpec = parseHeaderLine(line, "PRT");
                     proteinDataContainer = exec.createDataContainer(proteinSpec);
                 } else if ("PRT".equals(identifier)) { // handle PRT
                     parsePRTLine(proteinDataContainer, line);
                 } else if ("PEH".equals(identifier)) { // handle PEH
-                    DataTableSpec pepSpec = parseHeaderLine(line);
+                    DataTableSpec pepSpec = parseHeaderLine(line, "PEP");
                     peptideDataContainer = exec.createDataContainer(pepSpec);
                 } else if ("PEP".equals(identifier)) { // handle PEP
                     parsePEPLine(peptideDataContainer, line);
                 } else if ("PSH".equals(identifier)) { // handle PSH
-                    DataTableSpec psmSpec = parseHeaderLine(line);
+                    DataTableSpec psmSpec = parseHeaderLine(line, "PSM");
                     psmDataContainer = exec.createDataContainer(psmSpec);
                 } else if ("PSM".equals(identifier)) { // handle PSM
                     parsePSMLine(psmDataContainer, line);
                 } else if ("SMH".equals(identifier)) { // handle SMH
-                    DataTableSpec smSpec = parseHeaderLine(line);
+                    DataTableSpec smSpec = parseHeaderLine(line, "SML");
                     smallMolContainer = exec.createDataContainer(smSpec);
                 } else if ("SML".equals(identifier)) { // handle SML
                     parseSMLLine(smallMolContainer, line);
@@ -438,12 +438,12 @@ public class MzTabReaderNodeModel extends NodeModel {
         return returnValue;
     }
 
-    private DataTableSpec parseHeaderLine(final String line) {
+    private DataTableSpec parseHeaderLine(final String line, final String section) {
         String[] line_entries = line.split("\t");
         DataColumnSpec[] colSpecs = new DataColumnSpec[line_entries.length - 1];
 
         for (int i = 1; i < line_entries.length; ++i) {
-            DataType type = getDataType(line_entries[i]);
+            DataType type = getDataType(line_entries[i], section);
             colSpecs[i - 1] = new DataColumnSpecCreator(line_entries[i], type)
                     .createSpec();
         }
@@ -455,7 +455,7 @@ public class MzTabReaderNodeModel extends NodeModel {
         return new DataTableSpec(new DataColumnSpec[0]);
     }
     
-    private DataType getDataType(final String fieldName) {
+    private DataType getDataType(final String fieldName, final String section) {
     	String trimmed = fieldName.trim();
         if (isDouble(trimmed)) {
             return DoubleCell.TYPE;
@@ -465,6 +465,10 @@ public class MzTabReaderNodeModel extends NodeModel {
             return BooleanCell.TYPE;
         } else if (isDoubleList(trimmed)) {
             return ListCell.getCollectionType(DoubleCell.TYPE);
+	} else if (isIntList(trimmed)) {
+            return ListCell.getCollectionType(IntCell.TYPE);
+	} else if (isStringList(trimmed, section)) {
+            return ListCell.getCollectionType(StringCell.TYPE);
         } else {
             return StringCell.TYPE;
         }
@@ -494,14 +498,21 @@ public class MzTabReaderNodeModel extends NodeModel {
         return "retention_time".equals(fieldName)
                 || "retention_time_window".equals(fieldName);
     }
+	
+    private boolean isIntList(final String fieldName) {
+        return "start".equals(fieldName)
+                || "end".equals(fieldName);
+    }
+	
+    private boolean isStringList(final String fieldName, final String section) {
+        return "accession".equals(fieldName) && section.equals("PSM");
+    }
 
     private boolean isInt(final String fieldName) {
         return "charge".equals(fieldName)
         	|| "taxid".equals(fieldName)
-        	|| "start".equals(fieldName)
-        	|| "end".equals(fieldName)
-            || "reliability".equals(fieldName)
-            || regNumberOf.matcher(fieldName).matches();
+                || "reliability".equals(fieldName)
+                || regNumberOf.matcher(fieldName).matches();
     }
     
     private boolean isBool(final String fieldName) {
