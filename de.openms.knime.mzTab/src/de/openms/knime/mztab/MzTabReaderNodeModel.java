@@ -408,6 +408,39 @@ public class MzTabReaderNodeModel extends NodeModel {
                 	ListCell outputCell = CollectionCellFactory.createListCell(lc);
                 	cells[i] = outputCell;
                 }
+            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(IntCell.TYPE)) {
+                // we need to make sure that it is a proper value
+                if (line_entries[i + 1] == null
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
+                } else {
+                	ArrayList<IntCell> lc = new ArrayList<IntCell>();
+                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
+                	for (String dstr : line_entries[i + 1].split("\\|"))
+                	{
+                		int j = Integer.parseInt(dstr);
+                		lc.add(new IntCell(j));
+                	}
+                	ListCell outputCell = CollectionCellFactory.createListCell(lc);
+                	cells[i] = outputCell;
+                }
+            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(StringCell.TYPE)) {
+                // we need to make sure that it is a proper value
+                if (line_entries[i + 1] == null
+                        || "null".equals(line_entries[i + 1])
+                        || "-".equals(line_entries[i + 1])) {
+                    cells[i] = new MissingCell(line_entries[i + 1]);
+                } else {
+                	ArrayList<StringCell> lc = new ArrayList<StringCell>();
+                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
+                	for (String str : line_entries[i + 1].split("\\|"))
+                	{
+                		lc.add(new StringCell(str));
+                	}
+                	ListCell outputCell = CollectionCellFactory.createListCell(lc);
+                	cells[i] = outputCell;
+                }
             } else if (container.getTableSpec().getColumnSpec(i).getType() == BooleanCell.TYPE) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
