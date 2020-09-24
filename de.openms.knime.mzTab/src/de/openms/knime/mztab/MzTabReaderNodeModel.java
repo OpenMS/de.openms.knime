@@ -369,8 +369,10 @@ public class MzTabReaderNodeModel extends NodeModel {
         DataCell[] cells = new DataCell[container.getTableSpec()
                 .getNumColumns()];
         // convert the entries into a table column
+        //TODO Think about putting separators and missing values as constant values.
         for (int i = 0; i < container.getTableSpec().getNumColumns(); ++i) {
-            if (container.getTableSpec().getColumnSpec(i).getType() == IntCell.TYPE) {
+        	DataColumnSpec spec = container.getTableSpec().getColumnSpec(i);
+            if (spec.getType() == IntCell.TYPE) {
                 if (line_entries[i + 1] == null
                         || "null".equals(line_entries[i + 1])
                         || "-".equals(line_entries[i + 1])) {
@@ -379,7 +381,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new IntCell(
                             Integer.parseInt(line_entries[i + 1]));
                 }
-            } else if (container.getTableSpec().getColumnSpec(i).getType() == DoubleCell.TYPE) {
+            } else if (spec.getType() == DoubleCell.TYPE) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
                         || "INF".equals(line_entries[i + 1])
@@ -391,7 +393,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new DoubleCell(
                             Double.parseDouble(line_entries[i + 1]));
                 }
-            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(DoubleCell.TYPE)) {
+            } else if (spec.getType() == ListCell.getCollectionType(DoubleCell.TYPE)) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
                         || "null".equals(line_entries[i + 1])
@@ -399,8 +401,9 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                 	ArrayList<DoubleCell> lc = new ArrayList<DoubleCell>();
-                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
-                	for (String dstr : line_entries[i + 1].split("\\|"))
+                	// all DoubleLists are separated by pipes in mzTab as of now
+                	String[] sl = line_entries[i + 1].split("\\|");
+                	for (String dstr : sl)
                 	{
                 		double d = Double.parseDouble(dstr);
                 		lc.add(new DoubleCell(d));
@@ -416,8 +419,8 @@ public class MzTabReaderNodeModel extends NodeModel {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                 	ArrayList<IntCell> lc = new ArrayList<IntCell>();
-                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
-                	for (String dstr : line_entries[i + 1].split("\\|"))
+                	// all IntLists are currently separated by commas in mzTab as of now
+                	for (String dstr : line_entries[i + 1].split(","))
                 	{
                 		int j = Integer.parseInt(dstr);
                 		lc.add(new IntCell(j));
@@ -426,15 +429,26 @@ public class MzTabReaderNodeModel extends NodeModel {
                 	cells[i] = outputCell;
                 }
             } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(StringCell.TYPE)) {
-                // we need to make sure that it is a proper value
+            	String col = spec.getName().toLowerCase();
+            	// we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
                         || "null".equals(line_entries[i + 1])
                         || "-".equals(line_entries[i + 1])) {
                     cells[i] = new MissingCell(line_entries[i + 1]);
                 } else {
                 	ArrayList<StringCell> lc = new ArrayList<StringCell>();
-                	//escaping the pipe. TODO Think about putting separators and missing values as constant values.
-                	for (String str : line_entries[i + 1].split("\\|"))
+                	String[] sl;
+                	if (col == "modifications")
+                	{
+                		// split by commas not inside square brackets only
+                		sl = line_entries[i + 1].split(",(?![^\\[\\]]*+\\])"); 
+                	} else if (col == "accession" || col == "ambiguity_members" || col == "pre" || col == "post") {
+                		sl = line_entries[i + 1].split(",");
+                	} else { // search_engine, spectra_ref, identifier, smiles, inchi_key, best_search_engine_score*
+                		sl = line_entries[i + 1].split("\\|");
+                	}
+                	
+                	for (String str : sl)
                 	{
                 		lc.add(new StringCell(str));
                 	}
@@ -510,7 +524,7 @@ public class MzTabReaderNodeModel extends NodeModel {
     // (best_)search_engine_score_...
     Pattern regSearchEngineScore = Pattern
             .compile("^(?!opt_).+.*search_engine_score.*$");
-    // "entitiy"_abundance_"measure"_studyVariable[1-n]
+    // "entity"_abundance_"measure"_studyVariable[1-n]
     Pattern regAbundance = Pattern
             .compile("^(?!opt_).+.*_abundance.*$");
     // num_* for number of peptides/psms/etc.
@@ -538,7 +552,17 @@ public class MzTabReaderNodeModel extends NodeModel {
     }
 	
     private boolean isStringList(final String fieldName, final String section) {
-        return "accession".equals(fieldName) && section.equals("PSM");
+        return "accession".equals(fieldName) && section.equals("PSM")
+        		|| "pre".equals(fieldName)
+        		|| "post".equals(fieldName)
+        		|| "modifications".equals(fieldName)
+        		|| "spectra_ref".equals(fieldName)
+        		|| "go_terms".equals(fieldName)
+        		|| "search_engine".equals(fieldName)
+        		|| "ambiguity_members".equals(fieldName)
+        		|| "identifier".equals(fieldName)
+        		|| "smiles".equals(fieldName)
+        		|| "inchi_key".equals(fieldName);
     }
 
     private boolean isInt(final String fieldName) {
