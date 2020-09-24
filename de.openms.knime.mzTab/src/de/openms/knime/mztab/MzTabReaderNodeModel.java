@@ -444,7 +444,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 		sl = line_entries[i + 1].split(",(?![^\\[\\]]*+\\])"); 
                 	} else if (col == "accession" || col == "ambiguity_members" || col == "pre" || col == "post") {
                 		sl = line_entries[i + 1].split(",");
-                	} else { // search_engine, spectra_ref, identifier, smiles, inchi_key, best_search_engine_score*
+                	} else { // search_engine, spectra_ref, identifier, smiles, inchi_key
                 		sl = line_entries[i + 1].split("\\|");
                 	}
                 	
