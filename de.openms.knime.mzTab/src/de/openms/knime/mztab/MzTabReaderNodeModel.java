@@ -411,7 +411,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 	ListCell outputCell = CollectionCellFactory.createListCell(lc);
                 	cells[i] = outputCell;
                 }
-            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(IntCell.TYPE)) {
+            } else if (spec.getType() == ListCell.getCollectionType(IntCell.TYPE)) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
                         || "null".equals(line_entries[i + 1])
@@ -428,7 +428,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 	ListCell outputCell = CollectionCellFactory.createListCell(lc);
                 	cells[i] = outputCell;
                 }
-            } else if (container.getTableSpec().getColumnSpec(i).getType() == ListCell.getCollectionType(StringCell.TYPE)) {
+            } else if (spec.getType() == ListCell.getCollectionType(StringCell.TYPE)) {
             	String col = spec.getName().toLowerCase();
             	// we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
@@ -455,7 +455,7 @@ public class MzTabReaderNodeModel extends NodeModel {
                 	ListCell outputCell = CollectionCellFactory.createListCell(lc);
                 	cells[i] = outputCell;
                 }
-            } else if (container.getTableSpec().getColumnSpec(i).getType() == BooleanCell.TYPE) {
+            } else if (spec.getType() == BooleanCell.TYPE) {
                 // we need to make sure that it is a proper value
                 if (line_entries[i + 1] == null
                         || "null".equals(line_entries[i + 1])
