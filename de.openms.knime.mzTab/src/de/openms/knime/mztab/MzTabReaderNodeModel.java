@@ -57,6 +57,7 @@ import org.knime.core.data.def.StringCell;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.uri.IURIPortObject;
 import org.knime.core.data.uri.URIContent;
+import org.knime.core.data.uri.URIPortObjectSpec;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -438,11 +439,11 @@ public class MzTabReaderNodeModel extends NodeModel {
                 } else {
                 	ArrayList<StringCell> lc = new ArrayList<StringCell>();
                 	String[] sl;
-                	if (col == "modifications")
+                	if (col.equals("modifications"))
                 	{
                 		// split by commas not inside square brackets only
                 		sl = line_entries[i + 1].split(",(?![^\\[\\]]*+\\])"); 
-                	} else if (col == "accession" || col == "ambiguity_members" || col == "pre" || col == "post") {
+                	} else if (col.equals("accession") || col.equals("ambiguity_members") || col.equals("pre") || col.equals("post")) {
                 		sl = line_entries[i + 1].split(",");
                 	} else { // search_engine, spectra_ref, identifier, smiles, inchi_key
                 		sl = line_entries[i + 1].split("\\|");
@@ -589,6 +590,15 @@ public class MzTabReaderNodeModel extends NodeModel {
     @Override
     protected DataTableSpec[] configure(final PortObjectSpec[] inSpecs)
             throws InvalidSettingsException {
+    	URIPortObjectSpec spec = (URIPortObjectSpec) inSpecs[0];
+    	for (String ext : spec.getFileExtensions())
+    	{
+    		if (!ext.toLowerCase().equals("mztab") && !ext.toLowerCase().equals("tsv"))
+    		{
+    			throw new InvalidSettingsException("Only mzTab files supported (with extension mzTab or tsv)"); 
+    		}
+    	}
+    	
         return new DataTableSpec[] { createMetaDataSectionSpec(), null, null, null, null };
     }
 
