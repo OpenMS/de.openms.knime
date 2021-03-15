@@ -523,8 +523,9 @@ public class MzTabReaderNodeModel extends NodeModel {
     }
 
     // (best_)search_engine_score_...
+    //careful since psm_/prot_/small_molecule_search_engine_score is a String and describes the type of score
     Pattern regSearchEngineScore = Pattern
-            .compile("^(?!opt_).+.*search_engine_score.*$");
+            .compile("^(best_)?search_engine_score.*$");
     // "entity"_abundance_"measure"_studyVariable[1-n]
     Pattern regAbundance = Pattern
             .compile("^(?!opt_).+.*_abundance.*$");
