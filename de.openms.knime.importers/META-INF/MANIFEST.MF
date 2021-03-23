@@ -13,7 +13,7 @@ Require-Bundle: org.knime.base;bundle-version="[3.0.0,5.0.0)",
  org.slf4j.api;bundle-version="[1.7.2,2.0.0)"
 Eclipse-RegisterBuddy: org.knime.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ClassPath: bin/,
+Bundle-ClassPath: src/,
  lib/antlr-2.7.7.jar,
  lib/cpdetector-1.0.7.jar,
  lib/fastutil-6.5.1.jar,
@@ -27,5 +27,6 @@ Bundle-ClassPath: bin/,
  lib/stax-api-1.0-2.jar,
  lib/stax2-api-3.1.4.jar,
  lib/woodstox-core-asl-4.3.0.jar,
- lib/xxindex-0.18.jar
+ lib/xxindex-0.18.jar,
+ bin/
 Bundle-ActivationPolicy: lazy
