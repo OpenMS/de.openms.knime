@@ -1,11 +1,16 @@
+# Compilation products
 *.class
-bin/
+**/bin/
+**/target/**
 
 # Package Files #
 *.jar
 *.war
 *.ear
 
-**/target/**
+# Generated plugins that should be copied to the same folder to build the update site with maven
+de.openms/**
+de.openms.feature/**
 de.openms.maven/**
+de.openms.macosx.x86_64/**
 de.openms.knime.update/**
