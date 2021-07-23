@@ -314,6 +314,10 @@ public class TextExporterParser {
 				StringCell.TYPE).createSpec();
 		specs[current_col++] = new DataColumnSpecCreator("accessions",
 				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("start",
+				StringCell.TYPE).createSpec();
+		specs[current_col++] = new DataColumnSpecCreator("end",
+				StringCell.TYPE).createSpec();
 
 		return new DataTableSpec(specs);
 	}
