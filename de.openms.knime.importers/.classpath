@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/antlr-2.7.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cpdetector-1.0.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/fastutil-6.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jargs-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxb-api-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl-2.1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxb-xjc-2.1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jboss-jsfunit-microdeployer-1.3.0.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jchardet-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jmzml-1.7.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/stax-api-1.0-2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/stax2-api-3.1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/woodstox-core-asl-4.3.0.jar"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="bin" sourcepath="bin"/>
 	<classpathentry exported="true" kind="lib" path="lib/xxindex-0.18.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/chardet-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/charopenhashset-5.0.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/com.springsource.antlr-2.7.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cpdetector-1.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hamcrest-core-1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jargs-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-api-2.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmzml-1.7.12-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/relaxngDatatype-20020414.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.7.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/stax-api-1.0-2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/txw2-20110809.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-runtime-2.3.1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

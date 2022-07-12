@@ -9,4 +9,5 @@ Bundle-Activator: de.openms.knime.PluginActivator
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: de.openms.knime.textexporter_reader;singleton:=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Automatic-Module-Name: de.openms.knime.textexporter_reader
 
