@@ -10,4 +10,4 @@ Bundle-Activator: de.openms.knime.mztab.plugin.MzTabReaderNodesPlugin
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: de.openms.knime.mzTab;singleton:=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-
+Automatic-Module-Name: de.openms.knime.mzTab
