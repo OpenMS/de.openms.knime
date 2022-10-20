@@ -3,8 +3,12 @@
 **/bin/
 **/target/**
 
+# IDEs
+**/.vscode
+
 # Package Files #
 *.jar
+!**/lib/*.jar
 *.war
 *.ear
 
