@@ -49,7 +49,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private static final NodeLogger LOGGER = NodeLogger
 			.getLogger(OpenMSStartupMessageProvider.class);
 	
-	private static final String OPENMS_REQUIREMENTS_URI = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/OpenMSInstaller/PrerequisitesInstaller/OpenMS-2.5-prerequisites-installer.exe";
+	private static final String OPENMS_REQUIREMENTS_URI = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/OpenMSInstaller/PrerequisitesInstaller/OpenMS-3.0-prerequisites-installer.exe";
 
 	private static final String REG_DWORD_1 = "0x1";
 	private static final int BLD_DWORD_VALUE = 0x6ddf; // since VS2015 the registry key is the same. We need to check the min. build number now for VS2019
