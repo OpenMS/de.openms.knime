@@ -30,6 +30,9 @@
  */
 package de.openms.knime.startupcheck;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,29 +76,25 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	public List<StartupMessage> getMessages() {
 		try {
 			if (isWindows()) {
-
-				boolean dotNet4ValueClientExists = WinRegistryQuery.checkValue(
-						NET4_CLIENT_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-				LOGGER.debug(".NET4 Client Value exists: "
-						+ dotNet4ValueClientExists);
-
-				boolean dotNet4ValueFullExists = WinRegistryQuery.checkValue(
-						NET4_FULL_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-				LOGGER.debug(".NET4 Full Value exists: "
-						+ dotNet4ValueFullExists);
-
-				boolean dotNet35ValueExists = WinRegistryQuery.checkValue(
-						NET35_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-				LOGGER.debug(".NET3.5 1031 Value exists: "
-						+ dotNet35ValueExists);
-
-				if (!(dotNet35ValueExists
-						&& dotNet4ValueClientExists && dotNet4ValueFullExists)) {
-					return getWarning();
-				}
-
 				if (is64BitSystem()) {
 					boolean pwizok = true;
+					boolean dotNet4ValueClientExists = WinRegistryQuery.checkValue(
+							NET4_CLIENT_KEY, "REG_DWORD", "Install", REG_DWORD_1);
+					LOGGER.debug(".NET4 Client Value exists: "
+							+ dotNet4ValueClientExists);
+
+					boolean dotNet4ValueFullExists = WinRegistryQuery.checkValue(
+							NET4_FULL_KEY, "REG_DWORD", "Install", REG_DWORD_1);
+					LOGGER.debug(".NET4 Full Value exists: "
+							+ dotNet4ValueFullExists);
+
+					boolean dotNet35ValueExists = WinRegistryQuery.checkValue(
+							NET35_KEY, "REG_DWORD", "Install", REG_DWORD_1);
+					LOGGER.debug(".NET3.5 1031 Value exists: "
+							+ dotNet35ValueExists);
+
+					pwizok = dotNet35ValueExists && dotNet4ValueClientExists && dotNet4ValueFullExists;
+
 					for (String key : pwizkeys)
 					{
 						pwizok = pwizok && WinRegistryQuery
@@ -108,6 +107,21 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 						pwizok = pwizok && !WinRegistryQuery
 								.getValue(key, "REG_SZ", "Version").equals("");
 					}
+					
+					// This would be an alternative way to check for Redists that does not require reg. keys
+					// But it is much slower to load
+					/*String command = "Get-WmiObject -Class Win32_Product -Filter \\\"Name LIKE '%Visual C++ 2015%' OR Name LIKE '%Visual C++ 2017%' OR Name LIKE '%Visual C++ 2019%' OR Name LIKE '%Visual C++ 2022%'\\\"";
+					boolean vc2015to22Exists;
+					try {
+						vc2015to22Exists = powershellCMD(command);
+					} catch (IOException e) {
+						e.printStackTrace();
+						vc2015to22Exists = false;
+					}
+					if (!vc2015to22Exists) {
+						return getWarning();
+					}
+					*/
 					
 					boolean vcRedist2014_x64ValueExists = WinRegistryQuery
 							.checkValue(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Installed",
@@ -122,6 +136,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 					if (!(vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
 						return getWarning();
 					}
+
 					if (!pwizok) {
 						return getPwizWarning();
 					}
@@ -149,11 +164,13 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	
 	private List<StartupMessage> getPwizWarning() {
 		final String longMessage = String
-				.format("OpenMS FileConverter for RAW formats depends on ProteoWizard. Not all dependencies found." +
-						"Try our prerequisites installer <a href=\"%s\">here</a> first. If it does not help, " +
-						"consider installing ALL redistributables from <a href=\"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads\">here</a>.",
+				.format("When using the OpenMS node 'FileConverter' for conversion from vendor formats (e.g., Thermo RAW) it calls the packaged ProteoWizard. " +
+						"But not all dependencies for ProteoWizard were found. If you are not intending to use this functionality, please ignore this message. " +
+						"Otherwise, try our prerequisites installer <a href=\"%s\">here</a> first (and restart KNIME). If it does not help, " +
+						"consider installing ALL redistributables from <a href=\"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads\">here</a>. " +
+						"Please note that our check might not always be uptodate. Try executing 'FileConverter' on a vendor file despite this warning first, before reporting any issues.",
 						OPENMS_REQUIREMENTS_URI);
-		final String shortMessage = "Some of the OpenMS FileConverter requirements might be missing. Double click for details.";
+		final String shortMessage = "Some of the requirements for the FileConverter node from OpenMS might be missing. Double click for details.";
 
 		StartupMessage message = new StartupMessage(longMessage, shortMessage,
 				StartupMessage.WARNING, Activator.getInstance().getBundle());
@@ -169,4 +186,34 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private boolean isWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
+	
+	private boolean powershellCMD(String command) throws IOException
+	{
+	  //String command = "powershell.exe  your command";
+	  //Getting the version
+	  String cmd = "powershell.exe " + command;
+	  // Executing the command
+	  Process powerShellProcess = Runtime.getRuntime().exec(cmd);
+	  // Getting the results
+	  powerShellProcess.getOutputStream().close();
+	  String line;
+	  LOGGER.debug("Standard Output:");
+	  BufferedReader stdout = new BufferedReader(new InputStreamReader(
+	    powerShellProcess.getInputStream()));
+	  boolean result = false;
+	  while ((line = stdout.readLine()) != null) {
+		  LOGGER.debug(line);
+		  result = true;
+	  }
+	  stdout.close();
+	  LOGGER.debug("Standard Error:");
+	  BufferedReader stderr = new BufferedReader(new InputStreamReader(
+	    powerShellProcess.getErrorStream()));
+	  while ((line = stderr.readLine()) != null) {
+		  LOGGER.debug(line);
+	  }
+	  stderr.close();
+	  return result;
+	}
+
 }
