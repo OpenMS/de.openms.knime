@@ -34,7 +34,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.knime.core.node.NodeLogger;
@@ -44,7 +43,7 @@ import org.knime.workbench.ui.startup.StartupMessageProvider;
 import de.openms.knime.startupcheck.registryaccess.WinRegistryQuery;
 
 /**
- * @author aiche
+ * @author jpfeuffer
  * 
  */
 public class OpenMSStartupMessageProvider implements StartupMessageProvider {
@@ -55,8 +54,16 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 	private static final String OPENMS_REQUIREMENTS_URI = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/OpenMSInstaller/PrerequisitesInstaller/OpenMS-3.0-prerequisites-installer.exe";
 
 	private static final String REG_DWORD_1 = "0x1";
+
+	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
+	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
+	
+	// Those are deprecated dependencies. OpenMS now ships its redist. Pwiz now only requires .NET4 and now also ships redists.
+	/*
+	private static final String VCREDIST14_OPENMS_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64"; //Bundle VS2015,2017,2019
 	private static final int BLD_DWORD_VALUE = 0x6ddf; // since VS2015 the registry key is the same. We need to check the min. build number now for VS2019
 	
+	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
 	// keys from https://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed/27856142
 	private static ArrayList<String> pwizkeys = new ArrayList<String>(
 			Arrays.asList(
@@ -67,11 +74,8 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{ca67548a-5ebe-413a-b50c-4b9ceb6d66c6}", // VS2012
 				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{050d4fc8-5d48-4b8f-8972-47c82c46020f}" // VS2013
 				));
-	private static final String VCREDIST14_OPENMS_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64"; //Bundle VS2015,2017,2019
-	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
-	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
-	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
-
+	*/
+	
 	@Override
 	public List<StartupMessage> getMessages() {
 		try {
@@ -88,13 +92,15 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 					LOGGER.debug(".NET4 Full Value exists: "
 							+ dotNet4ValueFullExists);
 
+					/*
 					boolean dotNet35ValueExists = WinRegistryQuery.checkValue(
 							NET35_KEY, "REG_DWORD", "Install", REG_DWORD_1);
 					LOGGER.debug(".NET3.5 1031 Value exists: "
-							+ dotNet35ValueExists);
+							+ dotNet35ValueExists);*/
 
-					pwizok = dotNet35ValueExists && dotNet4ValueClientExists && dotNet4ValueFullExists;
+					pwizok = /*dotNet35ValueExists && */ dotNet4ValueClientExists && dotNet4ValueFullExists;
 
+					/*
 					for (String key : pwizkeys)
 					{
 						pwizok = pwizok && WinRegistryQuery
@@ -107,6 +113,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 						pwizok = pwizok && !WinRegistryQuery
 								.getValue(key, "REG_SZ", "Version").equals("");
 					}
+					*/
 					
 					// This would be an alternative way to check for Redists that does not require reg. keys
 					// But it is much slower to load
@@ -123,6 +130,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 					}
 					*/
 					
+					/* OpenMS now ships the redist
 					boolean vcRedist2014_x64ValueExists = WinRegistryQuery
 							.checkValue(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Installed",
 									REG_DWORD_1);
@@ -136,6 +144,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 					if (!(vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
 						return getWarning();
 					}
+					*/
 
 					if (!pwizok) {
 						return getPwizWarning();
@@ -148,6 +157,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 		return new ArrayList<StartupMessage>();
 	}
 
+	@SuppressWarnings("unused")
 	private List<StartupMessage> getWarning() {
 		final String longMessage = String
 				.format("Some of the requirements for the OpenMS KNIME Nodes are missing on your system. " +
@@ -187,6 +197,7 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean powershellCMD(String command) throws IOException
 	{
 	  //String command = "powershell.exe  your command";
