@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: OpenMS System Requirements Check
-Bundle-SymbolicName: de.openms.knime.startupCheck;singleton:=true
+Bundle-SymbolicName: de.openms.thirdparty.knime.startupCheck;singleton:=true
 Bundle-Version: 3.0.0.qualifier
-Bundle-Activator: de.openms.knime.startupcheck.Activator
+Bundle-Activator: de.openms.thirdparty.knime.startupcheck.Activator
 Require-Bundle: org.knime.workbench.core;bundle-version="[3.0.0,6.0.0)",
  org.knime.workbench.ui;bundle-version="[3.0.0,6.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Automatic-Module-Name: de.openms.knime.startupCheck
+Automatic-Module-Name: de.openms.thirdparty.knime.startupCheck

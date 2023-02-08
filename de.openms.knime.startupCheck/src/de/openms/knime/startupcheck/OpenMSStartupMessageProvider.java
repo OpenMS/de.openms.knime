@@ -40,9 +40,12 @@ import org.knime.core.node.NodeLogger;
 import org.knime.workbench.ui.startup.StartupMessage;
 import org.knime.workbench.ui.startup.StartupMessageProvider;
 
-import de.openms.knime.startupcheck.registryaccess.WinRegistryQuery;
+//import de.openms.knime.startupcheck.registryaccess.WinRegistryQuery;
 
 /**
+ * This is a class to provide a startup message when the OpenMS plugin is loaded, based on some system checks.
+ * @deprecated Since OpenMS ships ALL dependencies now, this is not needed anymore. For thirdparty tools,
+ * 	please see the de.openms.thirdparty.knime.startpCheck plugin.
  * @author jpfeuffer
  * 
  */
@@ -52,107 +55,48 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 			.getLogger(OpenMSStartupMessageProvider.class);
 	
 	private static final String OPENMS_REQUIREMENTS_URI = "https://abibuilder.cs.uni-tuebingen.de/archive/openms/OpenMSInstaller/PrerequisitesInstaller/OpenMS-3.0-prerequisites-installer.exe";
+	//private static final String REG_DWORD_1 = "0x1";
 
-	private static final String REG_DWORD_1 = "0x1";
-
-	private static final String NET4_FULL_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Full";
-	private static final String NET4_CLIENT_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v4\\Client";
-	
 	// Those are deprecated dependencies. OpenMS now ships its redist. Pwiz now only requires .NET4 and now also ships redists.
 	/*
 	private static final String VCREDIST14_OPENMS_X64_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64"; //Bundle VS2015,2017,2019
 	private static final int BLD_DWORD_VALUE = 0x6ddf; // since VS2015 the registry key is the same. We need to check the min. build number now for VS2019
-	
-	private static final String NET35_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP\\v3.5";
-	// keys from https://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed/27856142
-	private static ArrayList<String> pwizkeys = new ArrayList<String>(
-			Arrays.asList(
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Products\\67D6ECF5CD5FBA732B8B22BAC8DE1B4D", // VS2008
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Products\\1926E8D15D0BCE53481466615F760A7F")); // VS2010
-	private static ArrayList<String> pwizkeysnew = new ArrayList<String>(
-			Arrays.asList(
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{ca67548a-5ebe-413a-b50c-4b9ceb6d66c6}", // VS2012
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Dependencies\\{050d4fc8-5d48-4b8f-8972-47c82c46020f}" // VS2013
-				));
 	*/
 	
 	@Override
 	public List<StartupMessage> getMessages() {
-		try {
-			if (isWindows()) {
-				if (is64BitSystem()) {
-					boolean pwizok = true;
-					boolean dotNet4ValueClientExists = WinRegistryQuery.checkValue(
-							NET4_CLIENT_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-					LOGGER.debug(".NET4 Client Value exists: "
-							+ dotNet4ValueClientExists);
-
-					boolean dotNet4ValueFullExists = WinRegistryQuery.checkValue(
-							NET4_FULL_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-					LOGGER.debug(".NET4 Full Value exists: "
-							+ dotNet4ValueFullExists);
-
-					/*
-					boolean dotNet35ValueExists = WinRegistryQuery.checkValue(
-							NET35_KEY, "REG_DWORD", "Install", REG_DWORD_1);
-					LOGGER.debug(".NET3.5 1031 Value exists: "
-							+ dotNet35ValueExists);*/
-
-					pwizok = /*dotNet35ValueExists && */ dotNet4ValueClientExists && dotNet4ValueFullExists;
-
-					/*
-					for (String key : pwizkeys)
-					{
-						pwizok = pwizok && WinRegistryQuery
-								.checkValue(key, "REG_DWORD", "Assignment",
-										REG_DWORD_1);
-					}
-					
-					for (String key : pwizkeysnew)
-					{
-						pwizok = pwizok && !WinRegistryQuery
-								.getValue(key, "REG_SZ", "Version").equals("");
-					}
-					*/
-					
-					// This would be an alternative way to check for Redists that does not require reg. keys
-					// But it is much slower to load
-					/*String command = "Get-WmiObject -Class Win32_Product -Filter \\\"Name LIKE '%Visual C++ 2015%' OR Name LIKE '%Visual C++ 2017%' OR Name LIKE '%Visual C++ 2019%' OR Name LIKE '%Visual C++ 2022%'\\\"";
-					boolean vc2015to22Exists;
-					try {
-						vc2015to22Exists = powershellCMD(command);
-					} catch (IOException e) {
-						e.printStackTrace();
-						vc2015to22Exists = false;
-					}
-					if (!vc2015to22Exists) {
-						return getWarning();
-					}
-					*/
-					
-					/* OpenMS now ships the redist
-					boolean vcRedist2014_x64ValueExists = WinRegistryQuery
-							.checkValue(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Installed",
-									REG_DWORD_1);
-					LOGGER.debug("VC14 x64 Redist Value exists: "
-							+ vcRedist2014_x64ValueExists);
-					boolean vcRedist2014_x64BldValueEnough = WinRegistryQuery
-							.checkValueGreater(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Bld",
-									BLD_DWORD_VALUE, true);
-					LOGGER.debug("VC14 x64 Redist Value large enough.");
-
-					if (!(vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
-						return getWarning();
-					}
-					*/
-
-					if (!pwizok) {
-						return getPwizWarning();
-					}
+		if (isWindows()) {
+				// This would be an alternative way to check for Redists that does not require reg. keys
+				// But it is much slower to load
+				/*
+				String command = "Get-WmiObject -Class Win32_Product -Filter \\\"Name LIKE '%Visual C++ 2015%' OR Name LIKE '%Visual C++ 2017%' OR Name LIKE '%Visual C++ 2019%' OR Name LIKE '%Visual C++ 2022%'\\\"";
+				boolean vc2015to22Exists;
+				try {
+					vc2015to22Exists = powershellCMD(command);
+				} catch (IOException e) {
+					e.printStackTrace();
+					vc2015to22Exists = false;
 				}
-			}
-		} catch (IllegalArgumentException e) {
-			LOGGER.warn("Error when querying windows registry.", e);
+				if (!vc2015to22Exists) {
+					return getWarning();
+				}
+				*/
+				
+				/* OpenMS now ships the redist in the lib folder
+				boolean vcRedist2014_x64ValueExists = WinRegistryQuery
+						.checkValue(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Installed",
+								REG_DWORD_1);
+				LOGGER.debug("VC14 x64 Redist Value exists: "
+						+ vcRedist2014_x64ValueExists);
+				boolean vcRedist2014_x64BldValueEnough = WinRegistryQuery
+						.checkValueGreater(VCREDIST14_OPENMS_X64_KEY, "REG_DWORD", "Bld",
+								BLD_DWORD_VALUE, true);
+				LOGGER.debug("VC14 x64 Redist Value large enough.");
+
+				if (!(vcRedist2014_x64ValueExists && vcRedist2014_x64BldValueEnough)) {
+					return getWarning();
+				}
+				*/
 		}
 		return new ArrayList<StartupMessage>();
 	}
@@ -170,27 +114,6 @@ public class OpenMSStartupMessageProvider implements StartupMessageProvider {
 		List<StartupMessage> messages = new ArrayList<StartupMessage>();
 		messages.add(message);
 		return messages;
-	}
-	
-	private List<StartupMessage> getPwizWarning() {
-		final String longMessage = String
-				.format("When using the OpenMS node 'FileConverter' for conversion from vendor formats (e.g., Thermo RAW) it calls the packaged ProteoWizard. " +
-						"But not all dependencies for ProteoWizard were found. If you are not intending to use this functionality, please ignore this message. " +
-						"Otherwise, try our prerequisites installer <a href=\"%s\">here</a> first (and restart KNIME). If it does not help, " +
-						"consider installing ALL redistributables from <a href=\"https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads\">here</a>. " +
-						"Please note that our check might not always be uptodate. Try executing 'FileConverter' on a vendor file despite this warning first, before reporting any issues.",
-						OPENMS_REQUIREMENTS_URI);
-		final String shortMessage = "Some of the requirements for the FileConverter node from OpenMS might be missing. Double click for details.";
-
-		StartupMessage message = new StartupMessage(longMessage, shortMessage,
-				StartupMessage.WARNING, Activator.getInstance().getBundle());
-		List<StartupMessage> messages = new ArrayList<StartupMessage>();
-		messages.add(message);
-		return messages;
-	}
-
-	private boolean is64BitSystem() {
-		return "64".equals(System.getProperty("sun.arch.data.model"));
 	}
 
 	private boolean isWindows() {
