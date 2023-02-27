@@ -1,9 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test Fragment for the StartupCheck Plugin
-Bundle-SymbolicName: de.openms.knime.startupCheck.test
-Bundle-Version: 2.5.0.qualifier
+Bundle-SymbolicName: de.openms.thirdparty.knime.startupCheck.test
+Bundle-Version: 3.0.0.qualifier
 Bundle-Vendor: The OpenMS Team
-Fragment-Host: de.openms.knime.startupCheck;bundle-version="2.5.0"
+Fragment-Host: de.openms.knime.startupCheck;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle:  org.junit
+Automatic-Module-Name: de.openms.thirdparty.knime.startupCheck.test
